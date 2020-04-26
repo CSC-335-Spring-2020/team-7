@@ -1,10 +1,10 @@
 package controller;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.UUID;
+import model.CalenderEvent;
+import model.CalenderModel;
 
+import java.time.LocalDate;
+import java.util.*;
 
 /**
  * This is the controller for the Calender App.
@@ -15,19 +15,115 @@ import java.util.UUID;
  */
 
 public class CalenderController {
+    CalenderModel model;
 
-    public List<CalendarEvent> getEvents(Date date){
-        return model.getEvents(date);
+    public CalenderController(CalenderModel m){
+        model = m;
     }
 
+    /**
+     * Getter for the calender name
+     * @return the name
+     */
+    public String getName(){
+        return model.getName();
+    }
+
+    /**
+     * Setter for the calender name
+     * @param name the new name
+     */
+    public void setName(String name){
+        model.setName(name);
+    }
+
+    /**
+     * The range is [startDate, endDate) IE, it won't include the endDate
+     *
+     * @param startDate the date at which the range should should, inclusive
+     * @param endDate the date at which the range should end, exclusive
+     * @return a map of dates to lists of calenderEvents corresponding to the
+     * events happening between startDate and endDate.
+     */
+    public Map<Date, List<CalenderEvent>> getEvents(Date startDate, Date endDate){
+        Map<Date, List<CalenderEvent>> ret = new HashMap<>();
+        // make sure that the endDate isn't after the start date
+        if(endDate.before(startDate)){
+            throw new IllegalArgumentException("StartDate=" + startDate + " is after EndDate=" + endDate);
+        }
+
+        Date current = (Date) startDate.clone();
+        while(current.before(endDate)){
+            System.out.println(current);
+
+            // cloning the list of that the view editing what's returned from this
+            // method doesn't change the model
+            List<CalenderEvent> lst = model.getEvents(current);
+            // gross intense casting galore.
+            List<CalenderEvent> toAdd = (List<CalenderEvent>) ((ArrayList<CalenderEvent>) lst).clone();
+
+            /*
+             * Put some logic here to determine if there are any reoccurring
+             * events happening on this day.
+             */
+
+            ret.put(current, toAdd);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(current);
+            calendar.add(Calendar.DATE, 1);
+            current = calendar.getTime();
+        }
+        return ret;
+    }
+
+    /**
+     * Gets the events happening on a single day
+     *
+     * @param day the day to fetch
+     * @return a list of th events happening on that day
+     */
+    public List<CalenderEvent> getEventsOnDay(Date day){
+        // cloning the list of that the view editing what's returned from this
+        // method doesn't change the model
+        return (List<CalenderEvent>) model.getEvents(day).clone();
+    }
+
+    /**
+     * Takes the information needed to create an event, creates it, and adds it
+     * to the calender model
+     *
+     * @param title title of the event
+     * @param date date on which the event is taking place
+     * @param startTime the time which the event starts on
+     * @param endTime the time which the event ends on
+     * @param location optional, pass empty string if not wanted, the location the
+     *                 event should take place
+     * @param notes optional, pass empty string if not wanted, any notes attached
+     *              to the event
+     */
     public void addEvent(String title, Date date, int startTime, int endTime, String location, String notes){
-        int uuid = new UUID(title).getLeastSignificantBits();
-        CalendarEvent event = new CalenderEvent(title, date, startTime, endTime, location, notes);
-        model.addEvent(event);
-
+        String uuid = UUID.randomUUID().toString();
+        CalenderEvent event = new CalenderEvent(title, date, startTime, endTime, location, notes, uuid);
+        model.addEvent(date, event);
     }
 
-    public void removeEvent(CalendarEvent toRemove){
+    /**
+     * Used to remove an event when the user has access to the CalenderEvent
+     * object
+     *
+     * @param toRemove event to remove
+     */
+    public void removeEvent(CalenderEvent toRemove){
         model.removeEvent(toRemove);
+    }
+
+    /**
+     * Used to remove an event when the user has access to the CalenderEvent UUID
+     *
+     * @param uuid the id of the event to remove
+     */
+    public void removeEvent(String uuid){
+        model.removeEvent(uuid);
     }
 }
