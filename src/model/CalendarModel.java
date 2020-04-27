@@ -2,19 +2,19 @@ package model;
 
 import java.util.*;
 
-public class CalenderModel {
+public class CalendarModel {
     private String name;
-    private TreeMap<Date, List<CalenderEvent>> eventMap;
-    private List<CalenderReoccuringEvent> reoccuringEventList;
+    private TreeMap<Date, List<CalendarEvent>> eventMap;
+    private List<CalendarReoccuringEvent> reoccuringEventList;
 
-    public CalenderModel(String name, TreeMap<Date, List<CalenderEvent>> eventMap,
-                         List<CalenderReoccuringEvent> reoccuringEventList){
+    public CalendarModel(String name, TreeMap<Date, List<CalendarEvent>> eventMap,
+                         List<CalendarReoccuringEvent> reoccuringEventList){
         this.name = name;
         this.eventMap = eventMap;
         this.reoccuringEventList = reoccuringEventList;
     }
 
-    public CalenderModel(String name){
+    public CalendarModel(String name){
         this.name = name;
         eventMap = new TreeMap<>();
         reoccuringEventList = new ArrayList<>();
@@ -25,34 +25,34 @@ public class CalenderModel {
     public void setName(String name){
         this.name = name;
     }
-    public void addEvent(Date date, CalenderEvent event){
+    public void addEvent(Date date, CalendarEvent event){
         if (eventMap.containsKey(date)) {
             eventMap.get(date).add(event);
         }
         else {
-            List<CalenderEvent> tempList = new ArrayList<>();
+            List<CalendarEvent> tempList = new ArrayList<>();
             tempList.add(event);
             eventMap.put(date,tempList);
         }
     }
-    public void removeEvent(Date date, CalenderEvent event) throws IllegalArgumentException{
-        List<CalenderEvent> eventList = eventMap.get(date);
+    public void removeEvent(Date date, CalendarEvent event) throws IllegalArgumentException{
+        List<CalendarEvent> eventList = eventMap.get(date);
         boolean x = eventList.remove(event);
         if (x == false) {
             throw new IllegalArgumentException();}
     }
 
-    public List<CalenderEvent> getEvents(Date date){
+    public List<CalendarEvent> getEvents(Date date){
         return eventMap.get(date);
     }
 
-    public void addReoccuringEvent(CalenderReoccuringEvent event){
+    public void addReoccuringEvent(CalendarReoccuringEvent event){
         reoccuringEventList.add(event);
     }
-    public void removeReoccuringEvent(CalenderReoccuringEvent event){
+    public void removeReoccuringEvent(CalendarReoccuringEvent event){
         reoccuringEventList.remove(event);
     }
-    public List<CalenderReoccuringEvent> getReoccuringEventList(){
+    public List<CalendarReoccuringEvent> getReoccuringEventList(){
         return reoccuringEventList;
     }
 }
