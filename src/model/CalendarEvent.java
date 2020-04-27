@@ -9,9 +9,9 @@ public class CalendarEvent {
     private Date startTime, endTime;
     private String eventLocation;
     private String eventNotes;
-    private int eventId;
+    private String eventId;
 
-    public CalendarEvent(String title, Date date, Date start, Date end, int id) {
+    public CalendarEvent(String title, Date date, Date start, Date end, String id) {
         this.eventTitle = title;
         this.eventDate = date;
         this.startTime = start;
@@ -69,7 +69,7 @@ public class CalendarEvent {
         this.eventNotes = notes;
     }
 
-    public int getEventId() {
+    public String getEventId() {
         return this.eventId;
     }
 
