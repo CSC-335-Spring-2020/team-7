@@ -20,11 +20,22 @@ public class CalendarView extends javafx.application.Application {
         primaryStage.show();
     }
 
-    private void setBPLeft(){
+    /**
+     * Populates month view
+     */
+    private void setCenter(){
         VBox v = new VBox();
 
 
 
         bp.setLeft(v);
+    }
+
+    /**
+     * Populates Side bar UI
+     */
+    private void sideBarUI(){
+        //TODO: Add event button
+        //TODO: Display upcoming events
     }
 }
