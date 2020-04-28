@@ -5,17 +5,20 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
+import javafx.scene.text.*;
 import javafx.stage.Stage;
 import model.CalendarModel;
 
-import java.awt.*;
 
+/**
+ * @author Nicholas Lindenberg
+ * Current revision VIEW_2 Month UI
+ * Month UI statically implemented, need to be able to change between months.
+ */
 public class CalendarView extends javafx.application.Application {
     private BorderPane bp;
     private GridPane gp;
+    private VBox centerPane;
     private Scene scene;
     private CalendarController c;
     private CalendarModel m;
@@ -52,9 +55,17 @@ public class CalendarView extends javafx.application.Application {
      */
     private void setCenter() {
         //TODO: Integrate with model and controller so that dates are dynamic
+        centerPane = new VBox();
         gp.addRow(0);
         FlowPane p;
         Text t;
+        p = new FlowPane();
+        t = new Text("January\n");
+        t.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.ITALIC, 30));
+        p.getChildren().add(t);
+        p.setAlignment(Pos.CENTER);
+        t.setTextAlignment(TextAlignment.CENTER);
+        centerPane.getChildren().add(p);
         int i = 0;
         for (Days day : Days.values()) {
             p = new FlowPane();
@@ -68,7 +79,7 @@ public class CalendarView extends javafx.application.Application {
             i++;
         }
         int dayCounter = 1;
-        for (i = 1; i < 6; i++) {
+        for (i = 2; i < 7; i++) {
             gp.addRow(i);
             for (int j = 0; j < 7; j++) {
                 p = new FlowPane();
@@ -87,7 +98,8 @@ public class CalendarView extends javafx.application.Application {
                 gp.add(p, j, i);
             }
         }
-        bp.setCenter(gp);
+        centerPane.getChildren().add(gp);
+        bp.setCenter(centerPane);
     }
 
     /**
