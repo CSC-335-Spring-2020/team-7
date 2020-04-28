@@ -5,19 +5,19 @@ import java.util.*;
 public class CalendarModel {
     private String name;
     private TreeMap<Date, List<CalendarEvent>> eventMap;
-    private List<CalendarReoccuringEvent> reoccuringEventList;
+    private List<CalendarRecurringEvent> recurringEventList;
 
     public CalendarModel(String name, TreeMap<Date, List<CalendarEvent>> eventMap,
-                         List<CalendarReoccuringEvent> reoccuringEventList){
+                         List<CalendarRecurringEvent> recurringEventList){
         this.name = name;
         this.eventMap = eventMap;
-        this.reoccuringEventList = reoccuringEventList;
+        this.recurringEventList = recurringEventList;
     }
 
     public CalendarModel(String name){
         this.name = name;
         eventMap = new TreeMap<>();
-        reoccuringEventList = new ArrayList<>();
+        recurringEventList = new ArrayList<CalendarRecurringEvent>();
     }
     public String getName(){
         return name;
@@ -46,13 +46,23 @@ public class CalendarModel {
         return eventMap.get(date);
     }
 
-    public void addReoccuringEvent(CalendarReoccuringEvent event){
-        reoccuringEventList.add(event);
+    public void addRecurringEvent(CalendarRecurringEvent event){
+        recurringEventList.add(event);
     }
-    public void removeReoccuringEvent(CalendarReoccuringEvent event){
-        reoccuringEventList.remove(event);
+    public void removeRecurringEvent(CalendarRecurringEvent event){
+        recurringEventList.remove(event);
     }
-    public List<CalendarReoccuringEvent> getReoccuringEventList(){
-        return reoccuringEventList;
+    public List<CalendarRecurringEvent> getRecurringEventList(){
+        return recurringEventList;
+    }
+
+    public void removeEvent(String uuid) throws IllegalArgumentException{
+        for (List<CalendarEvent> i: eventMap.values()){
+            for (CalendarEvent currEvent: i){
+                if (currEvent.getEventId() == uuid){
+                    i.remove(currEvent);
+                }
+            }
+        }
     }
 }
