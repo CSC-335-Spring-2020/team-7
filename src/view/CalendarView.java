@@ -3,11 +3,15 @@ package view;
 import controller.CalendarController;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.*;
 import javafx.stage.Stage;
 import model.CalendarModel;
+
+import java.util.Calendar;
+import java.util.Date;
 
 
 /**
@@ -43,6 +47,7 @@ public class CalendarView extends javafx.application.Application {
         gp = new GridPane();
         bp = new BorderPane();
         setCenter();
+        sideBarUI();
         scene = new Scene(bp);
         primaryStage.setTitle(String.format("%s's Calendar", c.getName()));
 
@@ -108,7 +113,34 @@ public class CalendarView extends javafx.application.Application {
     private void sideBarUI() {
         //TODO: Add event button
         //TODO: Display upcoming events
-        VBox v = new VBox();
+        Calendar now = Calendar.getInstance();
+        Label setDayLabel = new Label("Enter date (MM/DD/YYYY)");
+        HBox setDayHBox = new HBox(setDayLabel);
+        setDayHBox.setAlignment(Pos.CENTER);
+        TextField monthField = new TextField(String.valueOf(now.get(Calendar.MONTH) + 1));
+        TextField dayField = new TextField(String.valueOf(now.get(Calendar.DATE)));
+        TextField yearField = new TextField(String.valueOf(now.get(Calendar.YEAR)));
+        monthField.setPrefWidth(40);
+        dayField.setPrefWidth(40);
+        yearField.setPrefWidth(60);
+        HBox dateHBox = new HBox(monthField,dayField,yearField);
+
+        RadioButton monthViewButton = new RadioButton("Month");
+        RadioButton weekViewButton = new RadioButton("Week");
+        RadioButton dayViewButton = new RadioButton("Day");
+        ToggleGroup viewButtonGroup = new ToggleGroup();
+        monthViewButton.setToggleGroup(viewButtonGroup);
+        monthViewButton.setSelected(true);
+        weekViewButton.setToggleGroup(viewButtonGroup);
+        dayViewButton.setToggleGroup(viewButtonGroup);
+        VBox viewHBox = new VBox(monthViewButton, weekViewButton,dayViewButton);
+        Button addEventButton = new Button("Add Event");
+        addEventButton.setOnAction(event -> {
+            AddEventModal modalInstance = new AddEventModal(true,null,c);
+        });
+
+
+        VBox v = new VBox(setDayHBox,dateHBox,viewHBox,addEventButton);
         bp.setLeft(v);
     }
 }
