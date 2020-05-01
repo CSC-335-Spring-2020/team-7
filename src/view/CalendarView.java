@@ -133,14 +133,15 @@ public class CalendarView extends javafx.application.Application {
         monthViewButton.setSelected(true);
         weekViewButton.setToggleGroup(viewButtonGroup);
         dayViewButton.setToggleGroup(viewButtonGroup);
-        VBox viewHBox = new VBox(monthViewButton, weekViewButton,dayViewButton);
+        VBox viewHBox = new VBox(10,monthViewButton, weekViewButton,dayViewButton);
         Button addEventButton = new Button("Add Event");
         addEventButton.setOnAction(event -> {
             AddEventModal modalInstance = new AddEventModal(true,null,c);
+            modalInstance.show();
         });
 
 
-        VBox v = new VBox(setDayHBox,dateHBox,viewHBox,addEventButton);
+        VBox v = new VBox(20,setDayHBox,dateHBox,viewHBox,addEventButton);
         bp.setLeft(v);
     }
 }
