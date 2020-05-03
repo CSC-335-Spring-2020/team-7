@@ -281,12 +281,21 @@ public class AddEventModal extends Stage {
         });
         leftEventButton.setMaxWidth(Double.MAX_VALUE);
 
+        Button removeEvent = new Button("Remove Event");
+        removeEvent.setOnMouseClicked(e->{
+            if(event != null){
+                c.removeEvent(event);
+            }
+            this.close();
+        });
+        removeEvent.setMaxWidth(Double.MAX_VALUE);
+
         /*
          * Code for the bottom buttons box, add or remove from the list to
          * change the buttons
          */
         ArrayList<Button> buttons =
-                new ArrayList<>(Arrays.asList(leftEventButton, rightEventButton));
+                new ArrayList<>(Arrays.asList(removeEvent, leftEventButton, rightEventButton));
 
         HBox buttonBox = new HBox();
         for(Button b : buttons){
