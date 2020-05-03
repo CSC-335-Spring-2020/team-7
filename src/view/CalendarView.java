@@ -12,6 +12,8 @@ import model.CalendarModel;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Observable;
+import java.util.Observer;
 
 
 /**
@@ -19,13 +21,15 @@ import java.util.Date;
  * Current revision VIEW_2 Month UI
  * Month UI statically implemented, need to be able to change between months.
  */
-public class CalendarView extends javafx.application.Application {
+public class CalendarView extends javafx.application.Application implements Observer {
     private BorderPane bp;
     private GridPane gp;
     protected VBox centerPane;
     private Scene scene;
     protected CalendarController c;
     private CalendarModel m;
+
+
 
     private enum Days {
         Sunday,
@@ -37,21 +41,28 @@ public class CalendarView extends javafx.application.Application {
         Saturday
     }
 
+    /**
+     * This method should be called in all setCenter methods, including in
+     * children, as the first line, so that redrawing works
+     */
+    public void resetCenter(){
+        centerPane = new VBox();
+        bp.setCenter(centerPane);
+
+        centerPane.getChildren().add(gp);
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         // TODO: Add and set icon for calendar window
         //primaryStage.setMinHeight(1000);
         primaryStage.setMaxWidth(1400);
         m = new CalendarModel("TestCalendar");
+        m.addObserver(this);
         c = new CalendarController(m);
         gp = new GridPane();
         bp = new BorderPane();
 
-        // this code was moved from the setCenter method so that
-        // only that method needed to change for the inheritance
-        // to work
-        centerPane = new VBox();
-        bp.setCenter(centerPane);
         setCenter();
 
         sideBarUI();
@@ -67,6 +78,9 @@ public class CalendarView extends javafx.application.Application {
      */
     protected void setCenter() {
         //TODO: Integrate with model and controller so that dates are dynamic
+
+        resetCenter();
+
         gp.addRow(0);
         FlowPane p;
         Text t;
@@ -109,7 +123,18 @@ public class CalendarView extends javafx.application.Application {
                 gp.add(p, j, i);
             }
         }
-        centerPane.getChildren().add(gp);
+    }
+
+    /**
+     * This method will be called whenever something in the model
+     * is updated default implementation just calls set center again
+     * @param o
+     * @param arg
+     */
+    @Override
+    public void update(Observable o, Object arg) {
+        System.out.println("update");
+        setCenter();
     }
 
     /**

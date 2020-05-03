@@ -2,7 +2,7 @@ package model;
 
 import java.util.*;
 
-public class CalendarModel {
+public class CalendarModel extends Observable{
     private String name;
     private TreeMap<Date, List<CalendarEvent>> eventMap;
     private List<CalendarRecurringEvent> recurringEventList;
@@ -34,12 +34,16 @@ public class CalendarModel {
             tempList.add(event);
             eventMap.put(date,tempList);
         }
+        setChanged();
+        notifyObservers();
     }
     public void removeEvent(Date date, CalendarEvent event) throws IllegalArgumentException{
         List<CalendarEvent> eventList = eventMap.get(date);
         boolean x = eventList.remove(event);
         if (x == false) {
             throw new IllegalArgumentException();}
+        setChanged();
+        notifyObservers();
     }
 
     public List<CalendarEvent> getEvents(Date date){
@@ -52,9 +56,13 @@ public class CalendarModel {
 
     public void addRecurringEvent(CalendarRecurringEvent event){
         recurringEventList.add(event);
+        setChanged();
+        notifyObservers();
     }
     public void removeRecurringEvent(CalendarRecurringEvent event){
         recurringEventList.remove(event);
+        setChanged();
+        notifyObservers();
     }
     public List<CalendarRecurringEvent> getRecurringEventList(){
         return recurringEventList;
@@ -68,5 +76,7 @@ public class CalendarModel {
                 }
             }
         }
+        setChanged();
+        notifyObservers();
     }
 }

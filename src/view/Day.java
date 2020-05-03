@@ -68,6 +68,7 @@ public class Day {
 
     public void populateFrame(CalendarController c){
         List<CalendarEvent> events = c.getEventsOnDay(day);
+        System.out.println(events);
     }
 
 

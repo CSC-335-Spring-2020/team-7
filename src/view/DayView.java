@@ -14,11 +14,13 @@ public class DayView extends  CalendarView {
      */
     @Override
     protected void setCenter(){
+        resetCenter();
         List<CalendarController> calenders = new ArrayList<>();
         calenders.add(c);
 
         // calling the constructor will cause the day to be drawn to the screen
         Date day = new Date();
+        day.setTime(0);
         System.out.println(day);
         Day view = new Day(centerPane, calenders, day, true);
     }

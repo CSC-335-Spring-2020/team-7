@@ -258,11 +258,13 @@ public class AddEventModal extends Stage {
             }
 
             // print out diagnostic information
+            /*
             System.out.println("Title : " + title.getText());
             System.out.println("Start Date : " + newStart);
             System.out.println("End Date : " + newEnd);
             System.out.println("Location : " + location.getText());
             System.out.println("Notes :\n" + notes.getText());
+             */
             this.close();
         });
         rightEventButton.setMaxWidth(Double.MAX_VALUE);
