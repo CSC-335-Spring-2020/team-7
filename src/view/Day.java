@@ -3,73 +3,128 @@ package view;
 import controller.CalendarController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import model.CalendarEvent;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 /**
- * This class serves as the center component for both the week and day view
- * classes. It represents a time referenced verticle table of times and events
- * the pane that it should fill should be passed to the constructor as a
- * parameter
+ * This class is a static class which exists to provide the "day" method
+ * which takes a parent, among other things, and draws a "day" within that
+ * parent scene
+ *
+ * @author Amin Sennour
  */
 
 public class Day {
-    boolean showTime;
-    Date day;
-    VBox time;
+    /**
+     * The main method of this class, takes a parent and other information,
+     * and draws the day within the parent
+     *
+     * @param parent the scene to draw in
+     * @param calendars a list of CalenderControllers, all the calenders to
+     *                  draw from
+     * @param day the day being represented
+     * @param showTime if the time bar should be shown or not
+     */
+    public static void day(Pane parent, List<CalendarController> calendars, Date day, boolean showTime){
+        GridPane mainGrid = new GridPane();
+        VBox.setVgrow(mainGrid, Priority.ALWAYS);
+        mainGrid.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        mainGrid.setGridLinesVisible(true);
+        mainGrid.getStyleClass().add("grid-pane");
 
-    public Day(Pane parent, List<CalendarController> calendars, Date day, boolean showTime){
-        this.showTime = showTime;
-        this.day = day;
+        DateFormat dateFormat = new SimpleDateFormat("MMMM dd yyyy");
+        String strDate = dateFormat.format(day);
 
+        Label l = new Label(strDate);
+        l.setMaxWidth(Double.MAX_VALUE);
+        l.setPadding(new Insets(15,15,15,15));
+        l.setBorder(new Border(new BorderStroke(Color.BLACK,
+                BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
 
+        VBox.setVgrow(l, Priority.ALWAYS);
 
-        VBox time = new VBox();
-        VBox.setVgrow(time, Priority.ALWAYS);
-        this.time = time;
-        time.setPadding(new Insets(10,10,10,10));
-        time.setMaxWidth(55);
-        time.setBackground(new Background(new BackgroundFill(Color.PINK, CornerRadii.EMPTY, Insets.EMPTY)));
+        VBox v = new VBox(l, mainGrid);
+        v.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
+        v.prefHeightProperty().bind(parent.heightProperty());
+        v.prefWidthProperty().bind(parent.widthProperty());
 
-        VBox events = new VBox();
-
-        ScrollPane scrollPane = new ScrollPane(time);
-        parent.getChildren().add(scrollPane);
-
-        generateFrame();
+        addTime(showTime, mainGrid);
         for(CalendarController c : calendars){
-            populateFrame(c);
+            populateEvents(c, day, mainGrid);
+        }
+
+
+        parent.getChildren().add(v);
+    }
+
+    /**
+     * Draws the time bar in the first column of mainGrid, or, if time
+     * is not to be shown, this method sets up the grid with 23 rows
+     *
+     * @param showTime if time is to be shown or not
+     * @param mainGrid the grid
+     */
+    private static void addTime(boolean showTime, GridPane mainGrid){
+        ColumnConstraints cols = new ColumnConstraints();
+        cols.setMaxWidth(25);
+        cols.setMinWidth(25);
+        cols.setHgrow(Priority.ALWAYS);
+        mainGrid.getColumnConstraints().add(cols);
+
+        for(int i = 0; i<24; i++){
+            Label time = showTime ? new Label(Integer.toString(i)) : new Label("");
+            time.minWidth(1);
+
+            time.setPadding(new Insets(5, showTime ? 5 : 0, 5, showTime ? 5 : 0));
+            time.setAlignment(Pos.CENTER_RIGHT);
+
+            RowConstraints rows = new RowConstraints();
+            rows.setMaxHeight(Double.MAX_VALUE);
+            rows.setVgrow(Priority.ALWAYS);
+            mainGrid.getRowConstraints().add(rows);
+
+            mainGrid.add(time, 0, i);
         }
     }
 
     /**
-     * This generates a frame for the grid, specifically the vertical box of
-     * Hboxes that will contain the events. As well as the vbox of time, if the
-     * showTime boolean is true
+     * This method serves to populate the grid with the events on day in c
+     *
+     * @param c the controller
+     * @param day the day to look for
+     * @param mainGrid the grid to draw on
      */
-    public void generateFrame(){
-        for(int i = 0; i < 24; i++){
-            Label newTime = new Label(Integer.toString(i));
-            newTime.setPrefHeight(10);
-            VBox.setVgrow(newTime, Priority.ALWAYS);
-            time.getChildren().add(newTime);
+    private static void populateEvents(CalendarController c, Date day, GridPane mainGrid){
+        List<CalendarEvent> events = c.getEventsOnDay(day);
+
+        if(events == null) return;
+        for(CalendarEvent e : events){
+            int time = e.getStartTime().getHours();
+            int endTime = e.getEndTime().getHours();
+
+            for(int i = time; i <=endTime; i++){
+                Label title = new Label(e.getTitle());
+                title.setPadding(new Insets(5,5,5,5));
+                title.setAlignment(Pos.CENTER_RIGHT);
+                title.setOnMouseClicked((event)->{
+                    AddEventModal m = new AddEventModal(false, e, c);
+                    m.show();
+                });
+                mainGrid.addRow(i, title);
+            }
+
+            ColumnConstraints cols = new ColumnConstraints();
+            cols.setMaxWidth(Double.MAX_VALUE);
+            cols.setHgrow(Priority.ALWAYS);
+            mainGrid.getColumnConstraints().add(cols);
         }
     }
-
-    public void populateFrame(CalendarController c){
-        List<CalendarEvent> events = c.getEventsOnDay(day);
-        System.out.println(events);
-    }
-
-
 }

@@ -1,6 +1,7 @@
 package view;
 
 import controller.CalendarController;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -47,16 +48,16 @@ public class CalendarView extends javafx.application.Application implements Obse
      */
     public void resetCenter(){
         centerPane = new VBox();
+        centerPane.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         bp.setCenter(centerPane);
-
-        centerPane.getChildren().add(gp);
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         // TODO: Add and set icon for calendar window
         //primaryStage.setMinHeight(1000);
-        primaryStage.setMaxWidth(1400);
+        // why is the width maxed?
+        //primaryStage.setMaxWidth(1400);
         m = new CalendarModel("TestCalendar");
         m.addObserver(this);
         c = new CalendarController(m);
@@ -64,7 +65,6 @@ public class CalendarView extends javafx.application.Application implements Obse
         bp = new BorderPane();
 
         setCenter();
-
         sideBarUI();
         scene = new Scene(bp);
         primaryStage.setTitle(String.format("%s's Calendar", c.getName()));
@@ -80,6 +80,7 @@ public class CalendarView extends javafx.application.Application implements Obse
         //TODO: Integrate with model and controller so that dates are dynamic
 
         resetCenter();
+        centerPane.getChildren().add(gp);
 
         gp.addRow(0);
         FlowPane p;

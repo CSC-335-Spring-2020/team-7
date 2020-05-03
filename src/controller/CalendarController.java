@@ -110,7 +110,9 @@ public class CalendarController {
 
         // set the time of the "day" of the event to 0 so that the model doesn't
         // have to deal with makings May 5 12pm and May 5 11am the same slot
-        date.setTime(0);
+        date.setHours(0);
+        date.setMinutes(0);
+        date.setSeconds(0);
 
         CalendarEvent event = new CalendarEvent(title, date, startTime, endTime, uuid);
 
