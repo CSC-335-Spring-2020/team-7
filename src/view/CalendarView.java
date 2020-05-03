@@ -117,13 +117,8 @@ public class CalendarView extends javafx.application.Application {
         Label setDayLabel = new Label("Enter date (MM/DD/YYYY)");
         HBox setDayHBox = new HBox(setDayLabel);
         setDayHBox.setAlignment(Pos.CENTER);
-        TextField monthField = new TextField(String.valueOf(now.get(Calendar.MONTH) + 1));
-        TextField dayField = new TextField(String.valueOf(now.get(Calendar.DATE)));
-        TextField yearField = new TextField(String.valueOf(now.get(Calendar.YEAR)));
-        monthField.setPrefWidth(40);
-        dayField.setPrefWidth(40);
-        yearField.setPrefWidth(60);
-        HBox dateHBox = new HBox(monthField,dayField,yearField);
+        DatePicker startDate = new DatePicker(java.time.LocalDate.now());
+
 
         RadioButton monthViewButton = new RadioButton("Month");
         RadioButton weekViewButton = new RadioButton("Week");
@@ -141,7 +136,7 @@ public class CalendarView extends javafx.application.Application {
         });
 
 
-        VBox v = new VBox(20,setDayHBox,dateHBox,viewHBox,addEventButton);
+        VBox v = new VBox(20,setDayHBox,startDate,viewHBox,addEventButton);
         bp.setLeft(v);
     }
 }
