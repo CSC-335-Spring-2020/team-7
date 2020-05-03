@@ -84,7 +84,12 @@ public class CalendarController {
     public List<CalendarEvent> getEventsOnDay(Date day){
         // cloning the list of that the view editing what's returned from this
         // method doesn't change the model
-        return new ArrayList<>(model.getEvents(day));
+        List<CalendarEvent> events = model.getEvents(day);
+        if(events != null){
+            return new ArrayList<>(events);
+        }else{
+            return null;
+        }
     }
 
     /**

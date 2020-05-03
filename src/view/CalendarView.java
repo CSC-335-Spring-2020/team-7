@@ -22,9 +22,9 @@ import java.util.Date;
 public class CalendarView extends javafx.application.Application {
     private BorderPane bp;
     private GridPane gp;
-    private VBox centerPane;
+    protected VBox centerPane;
     private Scene scene;
-    private CalendarController c;
+    protected CalendarController c;
     private CalendarModel m;
 
     private enum Days {
@@ -46,7 +46,14 @@ public class CalendarView extends javafx.application.Application {
         c = new CalendarController(m);
         gp = new GridPane();
         bp = new BorderPane();
+
+        // this code was moved from the setCenter method so that
+        // only that method needed to change for the inheritance
+        // to work
+        centerPane = new VBox();
+        bp.setCenter(centerPane);
         setCenter();
+
         sideBarUI();
         scene = new Scene(bp);
         primaryStage.setTitle(String.format("%s's Calendar", c.getName()));
@@ -58,9 +65,8 @@ public class CalendarView extends javafx.application.Application {
     /**
      * Populates month view
      */
-    private void setCenter() {
+    protected void setCenter() {
         //TODO: Integrate with model and controller so that dates are dynamic
-        centerPane = new VBox();
         gp.addRow(0);
         FlowPane p;
         Text t;
@@ -104,7 +110,6 @@ public class CalendarView extends javafx.application.Application {
             }
         }
         centerPane.getChildren().add(gp);
-        bp.setCenter(centerPane);
     }
 
     /**

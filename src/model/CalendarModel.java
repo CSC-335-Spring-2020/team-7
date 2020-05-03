@@ -43,7 +43,11 @@ public class CalendarModel {
     }
 
     public List<CalendarEvent> getEvents(Date date){
-        return eventMap.get(date);
+        if(eventMap.containsKey(date)){
+            return eventMap.get(date);
+        }else{
+            return null;
+        }
     }
 
     public void addRecurringEvent(CalendarRecurringEvent event){

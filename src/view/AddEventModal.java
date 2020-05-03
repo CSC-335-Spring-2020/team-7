@@ -251,6 +251,7 @@ public class AddEventModal extends Stage {
             }
 
             if(changed){
+                System.out.println("Added");
                 c.addEvent(
                         title.getText(), date, newStart, newEnd,
                         location.getText(), notes.getText());
