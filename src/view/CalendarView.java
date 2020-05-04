@@ -58,6 +58,7 @@ public class CalendarView extends javafx.application.Application implements Obse
         //primaryStage.setMinHeight(1000);
         // why is the width maxed?
         //primaryStage.setMaxWidth(1400);
+        primaryStage.setMaximized(true);
         m = new CalendarModel("TestCalendar");
         m.addObserver(this);
         c = new CalendarController(m);

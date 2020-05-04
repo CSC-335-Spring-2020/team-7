@@ -38,9 +38,9 @@ public class Day {
         mainGrid.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         mainGrid.setGridLinesVisible(true);
         mainGrid.getStyleClass().add("grid-pane");
-
         DateFormat dateFormat = new SimpleDateFormat("MMMM dd yyyy");
-        String strDate = dateFormat.format(day);
+        SimpleDateFormat dowFormat = new SimpleDateFormat("EEEE");
+        String strDate = dowFormat.format(day) + "\n" + dateFormat.format(day);
 
         Label l = new Label(strDate);
         l.setMaxWidth(Double.MAX_VALUE);
@@ -74,8 +74,8 @@ public class Day {
      */
     private static void addTime(boolean showTime, GridPane mainGrid){
         ColumnConstraints cols = new ColumnConstraints();
-        cols.setMaxWidth(25);
-        cols.setMinWidth(25);
+        cols.setMaxWidth(30);
+        cols.setMinWidth(30);
         cols.setHgrow(Priority.ALWAYS);
         mainGrid.getColumnConstraints().add(cols);
 
