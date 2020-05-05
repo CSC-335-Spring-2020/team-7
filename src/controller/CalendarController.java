@@ -182,12 +182,16 @@ public class CalendarController {
 
             if (currCmd.startsWith(BEGIN_VEVENT)) {
                 CalendarEvent event = parseEvent(in);
-                if (eventMap.containsKey(event.getDate())) {
-                    eventMap.get(event.getDate()).add(event);
+                if (event instanceof CalendarRecurringEvent) {
+                    recEvents.add( (CalendarRecurringEvent) event);
                 } else {
-                    List<CalendarEvent> events = new ArrayList<CalendarEvent>();
-                    events.add(event);
-                    eventMap.put(event.getDate(), events);
+                    if (eventMap.containsKey(event.getDate())) {
+                        eventMap.get(event.getDate()).add(event);
+                    } else {
+                        List<CalendarEvent> events = new ArrayList<CalendarEvent>();
+                        events.add(event);
+                        eventMap.put(event.getDate(), events);
+                    }
                 }
             }
         }
@@ -213,7 +217,7 @@ public class CalendarController {
         Date date = null;
         Date start = null;
         Date end = null;
-        int frequency = 0;
+        int frequency = -1;
 
         while (in.hasNextLine()) {
             String currCmd = in.nextLine();
@@ -259,16 +263,20 @@ public class CalendarController {
                         frequency = CalendarRecurringEvent.YEARLY;
                     }
                     break;
-                default:
-                    break;
-
             }
         }
         System.out.printf("%s %s %s $s %s", title, date, start, end, id);
-        CalendarEvent event = new CalendarEvent(title, date, start, end, id);
-        event.setLocation(location);
-        event.setNotes(notes);
-        return event;
+        if (frequency != -1) {
+            CalendarEvent event = new CalendarRecurringEvent(title, date, start, end, id, frequency);
+            event.setLocation(location);
+            event.setNotes(notes);
+            return event;
+        } else {
+            CalendarEvent event = new CalendarEvent(title, date, start, end, id);
+            event.setLocation(location);
+            event.setNotes(notes);
+            return event;
+        }
     }
 
     /**
