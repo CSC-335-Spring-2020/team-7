@@ -15,20 +15,23 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * This class allows for the construction of the calender app in a day view
+ * This class allows for the construction of the calender app in a week view
  * setting, inherits from the CalenderView main class, and uses methods /
  * fields present in that class
  *
  * @author Amin Sennour
+ * @author Mahmood Gladney
  */
 
-public class DayView {
+public class WeekView {
+
+
 
     /**
-     * The overriden setCenter method which replaces the center with the
+     * The setCenter method which replaces the center with the
      * day view
      */
-    protected static void setCenter(CalendarView calendarView, List<CalendarController> calenders, AtomicReference<Date> date,VBox centerPane){
+    protected static void setCenter(CalendarView calendarView, List<CalendarController> calenders,AtomicReference<Date> date, Date[] datesOfWeek, VBox centerPane){
         /*
          * Code for the forward / back buttons
          */
@@ -36,12 +39,14 @@ public class DayView {
         left.setMaxHeight(20);
         left.setMaxWidth(Double.MAX_VALUE);
         left.setOnMouseClicked((e)->{
-            date.set(addToDate(date.get(), -1));
+            date.set(addToDate(date.get(), -7));
+            WeekView.populateDatesOfWeek(date,datesOfWeek);
             calendarView.update(null, null);
         });
         Button right = new Button(">");
         right.setOnMouseClicked((e)->{
-            date.set(addToDate(date.get(), 1));
+            date.set(addToDate(date.get(), 7));
+            populateDatesOfWeek(date,datesOfWeek);
             calendarView.update(null, null);
         });
         right.setMaxWidth(Double.MAX_VALUE);
@@ -75,7 +80,30 @@ public class DayView {
         hold.prefHeightProperty().bind(scrollPane.heightProperty().add(-34));
         hold.prefWidthProperty().bind(scrollPane.widthProperty().add(-17));
 
-        Day.day(hold, calenders, zeroOutTime(date.get()), true);
+        populateDatesOfWeek(date,datesOfWeek);
+
+        boolean isFirst = true;
+        for(Date d : datesOfWeek){
+            Day.day(hold, calenders, d, isFirst);
+            isFirst = false;
+        }
+    }
+
+    protected static void populateDatesOfWeek(AtomicReference<Date> date,Date[] datesOfWeek) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date.get());
+        int starterDay = cal.get(Calendar.DAY_OF_WEEK);
+        datesOfWeek[starterDay - 1] = date.get();
+        Date tempDate = date.get();
+        for (int i = starterDay;i<7;i++){
+            tempDate = addToDate(tempDate, 1);
+            datesOfWeek[i] = tempDate;
+        }
+        tempDate = date.get();
+        for (int i = starterDay-2;i>=0;i--){
+            tempDate = addToDate(tempDate, -1);
+            datesOfWeek[i] = tempDate;
+        }
     }
 
     /**
@@ -84,7 +112,7 @@ public class DayView {
      * @param day the day who's time to zero
      * @return the date with the zeroed time
      */
-    private static Date zeroOutTime(Date day){
+    protected static Date zeroOutTime(Date day){
         Date ret = null;
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String strDate = dateFormat.format(day);
@@ -105,7 +133,7 @@ public class DayView {
      * @param amount the amount to shift by
      * @return the new date
      */
-    private static Date addToDate(Date date, int amount){
+    protected static Date addToDate(Date date, int amount){
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.add(Calendar.DATE, amount);

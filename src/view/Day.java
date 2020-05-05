@@ -10,6 +10,8 @@ import model.CalendarEvent;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
@@ -38,9 +40,9 @@ public class Day {
         mainGrid.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         mainGrid.setGridLinesVisible(true);
         mainGrid.getStyleClass().add("grid-pane");
-
         DateFormat dateFormat = new SimpleDateFormat("MMMM dd yyyy");
-        String strDate = dateFormat.format(day);
+        SimpleDateFormat dowFormat = new SimpleDateFormat("EEEE");
+        String strDate = dowFormat.format(day) + "\n" + dateFormat.format(day);
 
         Label l = new Label(strDate);
         l.setMaxWidth(Double.MAX_VALUE);
@@ -74,8 +76,8 @@ public class Day {
      */
     private static void addTime(boolean showTime, GridPane mainGrid){
         ColumnConstraints cols = new ColumnConstraints();
-        cols.setMaxWidth(25);
-        cols.setMinWidth(25);
+        cols.setMaxWidth(showTime ?  30 : 0);
+        cols.setMinWidth(showTime ?  30 : 0);
         cols.setHgrow(Priority.ALWAYS);
         mainGrid.getColumnConstraints().add(cols);
 
@@ -110,12 +112,25 @@ public class Day {
             int time = e.getStartTime().getHours();
             int endTime = e.getEndTime().getHours();
 
+            if(endTime < time){
+                System.out.println("hmmmmm event " + e.getEventId() + "has an end time after it's start time, flipping the times" +
+                        "because that's the only logical thing the user could have meant");
+
+                int hold = endTime;
+                endTime = time;
+                time = hold;
+
+                e.setNotes(e.getNotes() + "\n\nYour times are flipped, idiot :)\n\n");
+            }
+
             for(int i = time; i <=endTime; i++){
                 Label title = new Label(e.getTitle());
                 title.setPadding(new Insets(5,5,5,5));
                 title.setAlignment(Pos.CENTER_RIGHT);
                 title.setOnMouseClicked((event)->{
-                    AddEventModal m = new AddEventModal(false, e, c);
+                    ZoneId defaultZoneId = ZoneId.systemDefault();
+                    Instant instant = e.getDate().toInstant();
+                    AddEventModal m = new AddEventModal(false, e, c, instant.atZone(defaultZoneId).toLocalDate());
                     m.show();
                 });
                 mainGrid.addRow(i, title);
