@@ -1,15 +1,28 @@
 package view;
 
+import java.time.Instant;
 import java.time.YearMonth;
+import java.time.ZoneId;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import controller.CalendarController;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.geometry.Bounds;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.*;
+import model.CalendarEvent;
 
 /**
  * @author Nicholas Lindenberg
@@ -30,7 +43,7 @@ public class MonthView {
      * @param date - Date containing the relevant information.
      * @param centerPane - Pane from View object affected by these changes.
      */
-    protected static void setCenter(CalendarView calendarView, AtomicReference<Date> date, VBox centerPane) {
+    protected static void setCenter(CalendarView calendarView, List<CalendarController> c, AtomicReference<Date> date, VBox centerPane) {
         // BUTTONS
         Button left = new Button("<");
         left.setMaxHeight(20);
@@ -56,10 +69,11 @@ public class MonthView {
         // FILLS WINDOW WITH MONTH INFORMATION
         GridPane gp = new GridPane();
         gp.addRow(0);
+
         FlowPane p;
-        Text t;
+        Label t;
         p = new FlowPane();
-        t = new Text(months[date.get().getMonth()]);
+        t = new Label(months[date.get().getMonth()]);
         t.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.ITALIC, 30));
         p.getChildren().add(t);
         p.setAlignment(Pos.CENTER);
@@ -70,9 +84,8 @@ public class MonthView {
         int i = 0;
         for (CalendarView.Days day : CalendarView.Days.values()) {
             p = new FlowPane();
-            //p.setMinWidth(100);
             p.setAlignment(Pos.CENTER);
-            t = new Text(day.toString());
+            t = new Label(day.toString());
             t.setTextAlignment(TextAlignment.CENTER);
             p.getChildren().add(t);
             p.setPrefWidth(100);
@@ -83,20 +96,50 @@ public class MonthView {
         int startDay = getFirstDateOfMonth(date.get()).getDay();
         int rowCounter = 1;
         int columnCounter = startDay;
-        for (int row = 2; row < 9; row++){ gp.addRow(row);};
+        for (int row = 2; row < 9; row++){
+            gp.addRow(row);
+        };
         for (i = 1; i <= y.lengthOfMonth(); i++) {
             p = new FlowPane();
             p.setMinHeight(150);
             p.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(1))));
-            t = new Text("  " + Integer.toString(i));
+
+            t = new Label("  " + Integer.toString(i));
             t.setFont(new Font(20));
-            p.getChildren().add(t);
+
             gp.add(p, columnCounter, rowCounter);
             columnCounter++;
             if (columnCounter == 7) {
                 columnCounter = 0;
                 rowCounter++;
             }
+
+            // the following code displays the events to the calender
+            VBox content = new VBox();
+            content.setPadding(new Insets(5,5,5,5));
+            content.setSpacing(5);
+            content.getChildren().add(t);
+
+            p.getChildren().add(content);
+
+            for(CalendarController controller : c){
+                // get the events from the current controller on the current date
+                List<CalendarEvent> events = controller.getEventsOnDay(DayView.addToDate(getFirstDateOfMonth(date.get()), i-1));
+                if(events != null){
+                    for(CalendarEvent e : events){
+                        Label l = new Label(e.getTitle() + " | " + controller.getName());
+                        l.maxWidthProperty().bind(gp.widthProperty().divide(gp.impl_getColumnCount()).subtract(10));
+                        l.setOnMouseClicked((event)->{
+                            ZoneId defaultZoneId = ZoneId.systemDefault();
+                            Instant instant = e.getDate().toInstant();
+                            AddEventModal m = new AddEventModal(false, e, controller, instant.atZone(defaultZoneId).toLocalDate());
+                            m.show();
+                        });
+                        content.getChildren().add(l);
+                    }
+                }
+            }
+
         }
     }
 
