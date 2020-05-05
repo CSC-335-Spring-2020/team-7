@@ -84,7 +84,7 @@ public class DayView {
      * @param day the day who's time to zero
      * @return the date with the zeroed time
      */
-    private static Date zeroOutTime(Date day){
+    protected static Date zeroOutTime(Date day){
         Date ret = null;
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String strDate = dateFormat.format(day);
@@ -105,7 +105,7 @@ public class DayView {
      * @param amount the amount to shift by
      * @return the new date
      */
-    private static Date addToDate(Date date, int amount){
+    protected static Date addToDate(Date date, int amount){
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.add(Calendar.DATE, amount);

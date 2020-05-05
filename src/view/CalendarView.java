@@ -1,6 +1,7 @@
 package view;
 
 import controller.CalendarController;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -11,6 +12,7 @@ import javafx.scene.text.*;
 import javafx.stage.Stage;
 import model.CalendarModel;
 
+import java.io.PipedReader;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -35,6 +37,10 @@ public class CalendarView extends javafx.application.Application implements Obse
     // this has been updated to a list of controllers, for when we implant
     // multiple calenders
     protected List<CalendarController> c = new ArrayList<>();
+
+    // the calender currently being viewed, altered by the sideBarUI
+    private CalendarController currentController;
+
     private CalendarModel m;
 
     // the current date, exact for day view, week of for week view, and month of for month view
@@ -73,15 +79,18 @@ public class CalendarView extends javafx.application.Application implements Obse
         // why is the width maxed?
         //primaryStage.setMaxWidth(1400);
         primaryStage.setMaximized(true);
+
+        //TODO set this to load a users calender rather than a default empty one
         m = new CalendarModel("TestCalendar");
         m.addObserver(this);
-        c.add(new CalendarController(m));
+        currentController = new CalendarController(m);
+        c.add(currentController);
         bp = new BorderPane();
 
         setCenter();
         sideBarUI();
         scene = new Scene(bp);
-        primaryStage.setTitle(String.format("%s's Calendar", c.get(0).getName()));
+        primaryStage.setTitle(String.format("%s's Calendar", currentController.getName()));
 
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -171,13 +180,53 @@ public class CalendarView extends javafx.application.Application implements Obse
         addEventButton.setOnAction(event -> {
             ZoneId defaultZoneId = ZoneId.systemDefault();
             Instant instant = date.get().toInstant();
-            AddEventModal modalInstance = new AddEventModal(true,null,c.get(0), instant.atZone(defaultZoneId).toLocalDate());
+            AddEventModal modalInstance = new AddEventModal(true,null,currentController, instant.atZone(defaultZoneId).toLocalDate());
             modalInstance.show();
         });
-
+        addEventButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
         VBox v = new VBox(20,setDayHBox,startDate,viewHBox,addEventButton);
-        v.setPadding(new Insets(15,15,15,15));
-        bp.setLeft(v);
+
+        // using a border pane so the logic with adding / removing calenders
+        // sticks to the bottom
+        BorderPane sideBar = new BorderPane();
+        sideBar.setPadding(new Insets(15,15,15,15));
+        sideBar.setCenter(v);
+
+        Button addCalenders = new Button("Add a new Calender");
+        addCalenders.setOnMouseClicked((e)->{
+            //TODO add a calender and switch to it
+        });
+        addCalenders.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+        Button removeCalenders = new Button("Remove Current Calender");
+        removeCalenders.setOnMouseClicked((e)->{
+            Alert x = new Alert(Alert.AlertType.WARNING);
+            x.setTitle("Warning");
+            x.setHeaderText("Are you sure?");
+            x.showAndWait();
+
+            //TODO, remove the current calender
+        });
+        removeCalenders.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+        Label switchLabel = new Label("Choose your Calendar");
+        ChoiceBox<CalendarController> switchCalenders = new ChoiceBox<>();
+        switchCalenders.setOnAction((e)->{
+            switchCalenders.getValue();
+        });
+        for(CalendarController controller : c){
+            switchCalenders.getItems().add(controller);
+        }
+        switchCalenders.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+        VBox labelAndSwitch = new VBox(switchLabel, switchCalenders);
+        labelAndSwitch.setSpacing(5);
+
+        VBox addSwitchCalenders = new VBox(addCalenders, removeCalenders, labelAndSwitch);
+        addSwitchCalenders.setSpacing(15);
+        sideBar.setBottom(addSwitchCalenders);
+
+        bp.setLeft(sideBar);
     }
 }

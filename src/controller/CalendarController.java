@@ -139,4 +139,13 @@ public class CalendarController {
     public void removeEvent(String uuid){
         model.removeEvent(uuid);
     }
+
+    /**
+     * Gets the name of the calender when the controller is printed
+     * @return to name of the calender
+     */
+    @Override
+    public String toString() {
+        return getName();
+    }
 }
