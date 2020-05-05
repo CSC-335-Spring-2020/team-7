@@ -94,8 +94,7 @@ public class CalendarView extends javafx.application.Application implements Obse
         //TODO: Integrate with model and controller so that dates are dynamic
         resetCenter();
         if (currView == 1){
-            System.out.println("Set to the month view");
-            MonthView.setCenter(this,centerPane);
+            MonthView.setCenter(this, date,centerPane);
         }
         if (currView == 2){
             WeekView.setCenter(this,c,date,datesOfWeek,centerPane);
