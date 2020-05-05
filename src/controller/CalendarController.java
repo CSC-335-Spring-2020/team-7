@@ -36,7 +36,7 @@ public class CalendarController {
     private static final String LOCATION_ICS = "LOCATION";
     private static final String DESCRIPTION_ICS = "DESCRIPTION";
     private static final String UUID_ICS = "UID";
-    private static final String RECUR_ICS = "RRULE:FREQ=";
+    private static final String RECUR_ICS = "RRULE";
 
     public CalendarController(CalendarModel m){
         model = m;
@@ -170,7 +170,7 @@ public class CalendarController {
      * @param filename the name of the file to read in
      * @return A calendar generated from the given file
      */
-    public CalendarModel importCalendarFromFile(String filename) throws IOException, ParseException {
+    public static CalendarModel importCalendarFromFile(String filename) throws IOException {
         String calName = filename.substring(0, filename.indexOf('.'));
         TreeMap<Date, List<CalendarEvent>> eventMap = new TreeMap<Date, List<CalendarEvent>>();
         List<CalendarRecurringEvent> recEvents = new ArrayList<CalendarRecurringEvent>();
@@ -209,7 +209,7 @@ public class CalendarController {
      * @param in The file to parse the event from
      * @return A calendar event based on the event from the ICS file
      */
-    private CalendarEvent parseEvent(Scanner in) {
+    private static CalendarEvent parseEvent(Scanner in) {
         String title = "";
         String id = "";
         String location = "";
@@ -221,7 +221,8 @@ public class CalendarController {
 
         while (in.hasNextLine()) {
             String currCmd = in.nextLine();
-            String[] cmdParts = currCmd.split(":;");
+            currCmd = currCmd.replace(";", ":");
+            String[] cmdParts = currCmd.split(":");
             String cmdType = cmdParts[0];
             String cmdArg = cmdParts[1];
 
@@ -234,12 +235,12 @@ public class CalendarController {
                     title = cmdArg;
                     break;
                 case DATE_START_ICS:
-                    String dateStartStr = cmdArg.split(":")[1];
+                    String dateStartStr = cmdParts[2];
                     date = parseDate(dateStartStr);
                     start = parseDateTime(dateStartStr);
                     break;
                 case DATE_END_ICS:
-                    String dateEndStr = cmdArg.split(":")[1];
+                    String dateEndStr = cmdParts[2];
                     end = parseDateTime(dateEndStr);
                     break;
                 case LOCATION_ICS:
@@ -265,13 +266,15 @@ public class CalendarController {
                     break;
             }
         }
-        System.out.printf("%s %s %s $s %s", title, date, start, end, id);
+
         if (frequency != -1) {
+            System.out.printf("Event: \n\tTitle: %s \n\tDate: %s \n\tStart: %s \n\tEnd: %s \n\tID: %s \n\tFreq: %d", title, date, start, end, id, frequency);
             CalendarEvent event = new CalendarRecurringEvent(title, date, start, end, id, frequency);
             event.setLocation(location);
             event.setNotes(notes);
             return event;
         } else {
+            System.out.printf("Event: \n\tTitle: %s \n\tDate: %s \n\tStart: %s \n\tEnd: %s \n\tID: %s\n", title, date, start, end, id);
             CalendarEvent event = new CalendarEvent(title, date, start, end, id);
             event.setLocation(location);
             event.setNotes(notes);
@@ -288,7 +291,7 @@ public class CalendarController {
      * @param args The string storing the date to parse
      * @return A date form the given string
      */
-    private Date parseDate(String args) {
+    private static Date parseDate(String args) {
         int year = Integer.parseInt(args.substring(0, 4));
         int month = Integer.parseInt(args.substring(4, 6));
         int day = Integer.parseInt(args.substring(6, 8));
@@ -304,7 +307,7 @@ public class CalendarController {
      * @param args The string storing the date to parse
      * @return A date form the given string
      */
-    private Date parseDateTime(String args) {
+    private static Date parseDateTime(String args) {
         int year = Integer.parseInt(args.substring(0, 4));
         int month = Integer.parseInt(args.substring(4, 6));
         int day = Integer.parseInt(args.substring(6, 8));
@@ -314,8 +317,7 @@ public class CalendarController {
         return new Date(year, month, day, hour, minute, sec);
     }
 
-    public void exportCalendarToFile(String filename, CalendarModel calendar) {
+    public static void exportCalendarToFile(String filename, CalendarModel calendar) {
 
     }
-
 }
