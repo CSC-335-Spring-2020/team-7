@@ -22,19 +22,17 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Amin Sennour
  */
 
-public class DayView extends  CalendarView {
+public class DayView extends CalendarView {
 
-    // the date being viewed. Atomic so lambda's can change it
-    AtomicReference<Date> date = new AtomicReference<>(zeroOutTime(new Date()));
+
 
     /**
      * The overriden setCenter method which replaces the center with the
      * day view
      */
-    @Override
-    protected void setCenter(){
+    protected static void setCenter(CalendarView calendarView,CalendarController c,AtomicReference<Date> date,VBox centerPane){
         // method needed from the parent which arrases any content in the center
-        resetCenter();
+        calendarView.resetCenter();
 
         // temporary code, once the main class has a list of controllers
         // rather than a single one that list will be referenced instead
@@ -49,12 +47,12 @@ public class DayView extends  CalendarView {
         left.setMaxWidth(Double.MAX_VALUE);
         left.setOnMouseClicked((e)->{
             date.set(addToDate(date.get(), -1));
-            update(null, null);
+            calendarView.update(null, null);
         });
         Button right = new Button(">");
         right.setOnMouseClicked((e)->{
             date.set(addToDate(date.get(), 1));
-            update(null, null);
+            calendarView.update(null, null);
         });
         right.setMaxWidth(Double.MAX_VALUE);
         right.setMaxHeight(20);
@@ -96,7 +94,7 @@ public class DayView extends  CalendarView {
      * @param day the day who's time to zero
      * @return the date with the zeroed time
      */
-    private Date zeroOutTime(Date day){
+    private static Date zeroOutTime(Date day){
         Date ret = null;
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String strDate = dateFormat.format(day);
@@ -117,7 +115,7 @@ public class DayView extends  CalendarView {
      * @param amount the amount to shift by
      * @return the new date
      */
-    private Date addToDate(Date date, int amount){
+    private static Date addToDate(Date date, int amount){
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.add(Calendar.DATE, amount);

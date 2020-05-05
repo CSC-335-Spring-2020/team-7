@@ -15,6 +15,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
@@ -29,10 +30,11 @@ public class CalendarView extends javafx.application.Application implements Obse
     private Scene scene;
     protected CalendarController c;
     private CalendarModel m;
+    AtomicReference<Date> date = new AtomicReference<>(WeekView.zeroOutTime(new Date()));
+    Date[] datesOfWeek = new Date[7];
+    int currView = 1; // 1= monthView, 2 = weekView, 3 = dayView
 
-
-
-    private enum Days {
+    enum Days {
         Sunday,
         Monday,
         Tuesday,
@@ -81,50 +83,16 @@ public class CalendarView extends javafx.application.Application implements Obse
         //TODO: Integrate with model and controller so that dates are dynamic
 
         resetCenter();
-        centerPane.getChildren().add(gp);
-
-        gp.addRow(0);
-        FlowPane p;
-        Text t;
-        p = new FlowPane();
-        t = new Text("January\n");
-        t.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.ITALIC, 30));
-        p.getChildren().add(t);
-        p.setAlignment(Pos.CENTER);
-        t.setTextAlignment(TextAlignment.CENTER);
-        centerPane.getChildren().add(p);
-        int i = 0;
-        for (Days day : Days.values()) {
-            p = new FlowPane();
-            //p.setMinWidth(100);
-            p.setAlignment(Pos.CENTER);
-            t = new Text(day.toString());
-            t.setTextAlignment(TextAlignment.CENTER);
-            p.getChildren().add(t);
-            p.setPrefWidth(100);
-            gp.add(p, i, 0);
-            i++;
+        if (currView == 1){
+            MonthView.setCenter(this,centerPane,gp);
         }
-        int dayCounter = 1;
-        for (i = 2; i < 7; i++) {
-            gp.addRow(i);
-            for (int j = 0; j < 7; j++) {
-                p = new FlowPane();
-               // p.setMinWidth(100);
-                p.setMinHeight(150);
-                p.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(1))));
-                if (dayCounter < 31) {
-                    t = new Text("  " + Integer.toString(dayCounter));
-                } else {
-                    t = new Text("  " + Integer.toString(dayCounter - 30));
-                    t.setFill(Color.GRAY);
-                }
-                t.setFont(new Font(20));
-                p.getChildren().add(t);
-                dayCounter++;
-                gp.add(p, j, i);
-            }
+        if (currView == 2){
+            WeekView.setCenter(this,c,date,datesOfWeek,centerPane);
         }
+        if (currView == 3){
+            DayView.setCenter(this,c,date,centerPane);
+        }
+        bp.setCenter(centerPane);
     }
 
     /**
@@ -166,8 +134,18 @@ public class CalendarView extends javafx.application.Application implements Obse
             AddEventModal modalInstance = new AddEventModal(true,null,c);
             modalInstance.show();
         });
-
-
+        dayViewButton.setOnAction(event -> {
+            currView = 3;
+            setCenter();
+        });
+        weekViewButton.setOnAction(event -> {
+            currView = 2;
+            setCenter();
+        });
+        monthViewButton.setOnAction(event -> {
+            currView = 1;
+            setCenter();
+        });
         VBox v = new VBox(20,setDayHBox,startDate,viewHBox,addEventButton);
         bp.setLeft(v);
     }
