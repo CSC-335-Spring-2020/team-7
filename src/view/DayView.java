@@ -22,23 +22,13 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Amin Sennour
  */
 
-public class DayView extends CalendarView {
-
-
+public class DayView {
 
     /**
      * The overriden setCenter method which replaces the center with the
      * day view
      */
-    protected static void setCenter(CalendarView calendarView,CalendarController c,AtomicReference<Date> date,VBox centerPane){
-        // method needed from the parent which arrases any content in the center
-        calendarView.resetCenter();
-
-        // temporary code, once the main class has a list of controllers
-        // rather than a single one that list will be referenced instead
-        List<CalendarController> calenders = new ArrayList<>();
-        calenders.add(c);
-
+    protected static void setCenter(CalendarView calendarView, List<CalendarController> calenders, AtomicReference<Date> date,VBox centerPane){
         /*
          * Code for the forward / back buttons
          */
@@ -85,7 +75,7 @@ public class DayView extends CalendarView {
         hold.prefHeightProperty().bind(scrollPane.heightProperty().add(-34));
         hold.prefWidthProperty().bind(scrollPane.widthProperty().add(-17));
 
-        Day.day(hold, calenders, date.get(), true);
+        Day.day(hold, calenders, zeroOutTime(date.get()), true);
     }
 
     /**

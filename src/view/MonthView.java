@@ -5,12 +5,12 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.*;
 
-public class MonthView extends CalendarView {
+public class MonthView {
 
-    protected static void setCenter(CalendarView calendarView, VBox centerPane, GridPane gp) {
+    protected static void setCenter(CalendarView calendarView, VBox centerPane) {
         //TODO: Integrate with model and controller so that dates are dynamic
 
-        calendarView.resetCenter();
+        GridPane gp = new GridPane();
         centerPane.getChildren().add(gp);
 
         gp.addRow(0);

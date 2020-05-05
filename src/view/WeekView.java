@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Mahmood Gladney
  */
 
-public class WeekView extends  CalendarView {
+public class WeekView {
 
 
 
@@ -31,15 +31,7 @@ public class WeekView extends  CalendarView {
      * The setCenter method which replaces the center with the
      * day view
      */
-    protected static void setCenter(CalendarView calendarView,CalendarController c,AtomicReference<Date> date,Date[] datesOfWeek,VBox centerPane){
-        // method needed from the parent which arrases any content in the center
-        calendarView.resetCenter();
-
-        // temporary code, once the main class has a list of controllers
-        // rather than a single one that list will be referenced instead
-        List<CalendarController> calenders = new ArrayList<>();
-        calenders.add(c);
-
+    protected static void setCenter(CalendarView calendarView, List<CalendarController> calenders,AtomicReference<Date> date, Date[] datesOfWeek, VBox centerPane){
         /*
          * Code for the forward / back buttons
          */
@@ -90,13 +82,11 @@ public class WeekView extends  CalendarView {
 
         populateDatesOfWeek(date,datesOfWeek);
 
-        Day.day(hold, calenders, datesOfWeek[0], true);
-        Day.day(hold, calenders, datesOfWeek[1], true);
-        Day.day(hold, calenders, datesOfWeek[2], true);
-        Day.day(hold, calenders, datesOfWeek[3], true);
-        Day.day(hold, calenders, datesOfWeek[4], true);
-        Day.day(hold, calenders, datesOfWeek[5], true);
-        Day.day(hold, calenders, datesOfWeek[6], true);
+        boolean isFirst = true;
+        for(Date d : datesOfWeek){
+            Day.day(hold, calenders, d, isFirst);
+            isFirst = false;
+        }
     }
 
     protected static void populateDatesOfWeek(AtomicReference<Date> date,Date[] datesOfWeek) {
