@@ -3,6 +3,7 @@ package controller;
 import javafx.scene.paint.Color;
 import model.CalendarEvent;
 import model.CalendarModel;
+import model.CalendarRecurringEvent;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -93,6 +94,11 @@ public class CalendarController {
     public List<CalendarEvent> getEventsOnDay(Date day){
         // cloning the list of that the view editing what's returned from this
         // method doesn't change the model
+
+        day.setHours(0);
+        day.setMinutes(0);
+        day.setSeconds(0);
+
         List<CalendarEvent> events = model.getEvents(day);
         if(events != null){
             return new ArrayList<>(events);
@@ -128,6 +134,22 @@ public class CalendarController {
         event.setLocation(location);
         event.setNotes(notes);
         model.addEvent(date, event);
+    }
+
+    public void addRecurringEvent(String title, Date date, Date startTime, Date endTime, String location, String notes, int interval){
+        String uuid = UUID.randomUUID().toString();
+
+        // set the time of the "day" of the event to 0 so that the model doesn't
+        // have to deal with makings May 5 12pm and May 5 11am the same slot
+        date.setHours(12); // set these to take place at noon every "date" so they can be searched for easily
+        date.setMinutes(0);
+        date.setSeconds(0);
+
+        CalendarRecurringEvent event = new CalendarRecurringEvent(title, date, startTime, endTime, uuid, interval);
+
+        event.setLocation(location);
+        event.setNotes(notes);
+        model.addRecurringEvent(event);
     }
 
     /**

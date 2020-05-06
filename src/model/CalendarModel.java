@@ -1,6 +1,8 @@
 package model;
 
 import javafx.scene.paint.Color;
+import view.Day;
+import view.DayView;
 
 import javax.swing.plaf.synth.SynthUI;
 import java.util.*;
@@ -45,17 +47,44 @@ public class CalendarModel extends Observable{
         notifyObservers();
     }
     public void removeEvent(Date date, CalendarEvent event) throws IllegalArgumentException{
-        List<CalendarEvent> eventList = eventMap.get(date);
-        boolean x = eventList.remove(event);
-        if (x == false) {
-            throw new IllegalArgumentException();}
+        boolean isRecurring = false;
+        for(CalendarRecurringEvent e : recurringEventList){
+            if (e.getEventId().equals(event.getEventId())) {
+                isRecurring = true;
+                break;
+            }
+        }
+
+        if(isRecurring){
+            removeRecurringEvent((CalendarRecurringEvent) event);
+        }else{
+            List<CalendarEvent> eventList = eventMap.get(date);
+            boolean x = eventList.remove(event);
+            if (x == false) {
+                throw new IllegalArgumentException();}
+        }
+
         setChanged();
         notifyObservers();
     }
 
     public List<CalendarEvent> getEvents(Date date){
+        List<CalendarEvent> ret = new ArrayList<>();
+        for(CalendarRecurringEvent e : recurringEventList){
+
+            System.out.println(e.getTitle() + " | " + e.getDate() + " | " + date + " " + DayView.addToDate(date, 1) + " | " + e.getInterval());
+
+            if(!e.getOccurances(date, DayView.addToDate(date, 1)).isEmpty()){
+                ret.add(e);
+            }
+        }
+
         if(eventMap.containsKey(date)){
-            return eventMap.get(date);
+            ret.addAll(eventMap.get(date));
+        }
+
+        if(!ret.isEmpty()){
+            return ret;
         }else{
             return null;
         }

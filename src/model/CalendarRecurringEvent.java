@@ -1,9 +1,6 @@
 package model;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Calendar;
-import java.util.List;
+import java.util.*;
 
 public class CalendarRecurringEvent extends CalendarEvent {
 
@@ -11,6 +8,17 @@ public class CalendarRecurringEvent extends CalendarEvent {
     public static final int WEEKLY = Calendar.WEEK_OF_MONTH;
     public static final int MONTHLY = Calendar.MONTH;
     public static final int YEARLY = Calendar.YEAR;
+
+    public static final Map<String, Integer> intervals = buildMap();
+
+    public static Map<String, Integer> buildMap(){
+        Map<String, Integer> ret = new TreeMap<>();
+        ret.put("DAILY", DAILY);
+        ret.put("WEEKLY", WEEKLY);
+        ret.put("MONTHLY", MONTHLY);
+        ret.put("YEARLY", YEARLY);
+        return ret;
+     }
 
     private int interval;
 
@@ -23,8 +31,13 @@ public class CalendarRecurringEvent extends CalendarEvent {
      * Returns the interval of this recurring event
      * @return the interval
      */
-    public int getInterval() {
-        return this.interval;
+    public String getInterval() {
+        for(String k : intervals.keySet()){
+            if(intervals.get(k) == this.interval){
+                return k;
+            }
+        }
+        return "NONE";
     }
 
     /**
@@ -45,13 +58,6 @@ public class CalendarRecurringEvent extends CalendarEvent {
     public List<Date> getOccurances(Date start, Date end) {
         List<Date> occurrences = new ArrayList<Date>();
         Calendar cal = Calendar.getInstance();
-
-        cal.setTime(this.getDate());
-        while (cal.getTime().after(start)) {
-            if (cal.getTime().before(end))
-                occurrences.add(cal.getTime());
-            cal.add(interval, -1);
-        }
 
         cal.setTime(this.getDate());
         while (cal.getTime().before(end)) {

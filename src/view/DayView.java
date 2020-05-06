@@ -105,7 +105,7 @@ public class DayView {
      * @param amount the amount to shift by
      * @return the new date
      */
-    protected static Date addToDate(Date date, int amount){
+    public static Date addToDate(Date date, int amount){
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.add(Calendar.DATE, amount);

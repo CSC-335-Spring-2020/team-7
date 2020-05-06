@@ -73,4 +73,8 @@ public class CalendarEvent {
         return this.eventId;
     }
 
+    public String getInterval(){
+        return "NONE";
+    }
+
 }

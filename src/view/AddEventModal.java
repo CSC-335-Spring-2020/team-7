@@ -11,6 +11,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.CalendarEvent;
+import model.CalendarRecurringEvent;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -189,6 +190,25 @@ public class AddEventModal extends Stage {
         endTimeBox.setPadding(bottomPadded);
         HBox.setHgrow(endTimeAndLabel, Priority.ALWAYS);
 
+        /*
+         * Code for selecting re-occurrence
+         */
+        Label switchLabel = new Label("Recurrence");
+        switchLabel.setLabelFor(endTime);
+        switchLabel.setFont(new Font(15));
+        ChoiceBox<String> switchCalenders = new ChoiceBox<>();
+        switchCalenders.setDisable(!editable);
+        switchCalenders.setStyle("-fx-opacity: 1;");
+        switchCalenders.setOnAction((e)->setWasChanged(editable));
+        switchCalenders.getItems().add("NONE");
+        for(String interval : CalendarRecurringEvent.intervals.keySet()){
+            switchCalenders.getItems().add(interval);
+        }
+        switchCalenders.setValue(event == null ? "NONE" : event.getInterval());
+        switchCalenders.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+        VBox labelAndSwitch = new VBox(switchLabel, switchCalenders);
+        labelAndSwitch.setSpacing(5);
 
         /*
          * Code for the Location label and text box
@@ -257,11 +277,16 @@ public class AddEventModal extends Stage {
                 c.removeEvent(event);
             }
 
-            if(changed){
+            if(changed && switchCalenders.getValue().equals("NONE")){
                 System.out.println("Added");
                 c.addEvent(
                         title.getText(), newDate, newStart, newEnd,
                         location.getText(), notes.getText());
+            }else if(changed){
+                System.out.println("Added");
+                c.addRecurringEvent(
+                        title.getText(), newDate, newStart, newEnd,
+                        location.getText(), notes.getText(), CalendarRecurringEvent.intervals.get(switchCalenders.getValue()));
             }
 
             // print out diagnostic information
@@ -318,6 +343,7 @@ public class AddEventModal extends Stage {
         vb.getChildren().add(startDateBox);
         vb.getChildren().add(startTimeBox);
         vb.getChildren().add(endTimeBox);
+        vb.getChildren().add(labelAndSwitch);
         vb.getChildren().add(locationBox);
         vb.getChildren().add(notesBox);
 
