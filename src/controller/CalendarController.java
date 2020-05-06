@@ -9,6 +9,8 @@ import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This is the controller for the Calender App.
@@ -37,6 +39,8 @@ public class CalendarController {
     private static final String BEGIN_VCAL = "BEGIN:VCALENDAR" + ICS_NL +
                                              "VERSION:2.0" + ICS_NL +
                                              "CALSCALE:GREGORIAN" + ICS_NL;
+    private static final String STATUS_ICS = "STATUS:CONFIRMED";
+    private static final String SEQUENCE_ICS = "SEQUENCE:0";
     private static final String END_VCAL = "END:VCALENDAR";
 
     public CalendarController(CalendarModel m){
@@ -197,6 +201,7 @@ public class CalendarController {
             }
         }
         CalendarModel calOut = new CalendarModel(calName, eventMap, recEvents);
+        in.close();
         return calOut;
     }
 
@@ -225,23 +230,22 @@ public class CalendarController {
             currCmd = currCmd.replace(";", ":");
             String[] cmdParts = currCmd.split(":");
             String cmdType = cmdParts[0];
-            String cmdArg = cmdParts[1];
+            String cmdArg = cmdParts.length > 1 ? cmdParts[1] : "";
 
             if (currCmd.startsWith(END_VEVENT)) {
                 break;
             }
-
             switch(cmdType) {
                 case SUMMARY_ICS:
                     title = cmdArg;
                     break;
                 case DATE_START_ICS:
-                    String dateStartStr = cmdParts[2];
+                    String dateStartStr = currCmd.substring(currCmd.length() - 15);
                     date = parseDate(dateStartStr);
                     start = parseDateTime(dateStartStr);
                     break;
                 case DATE_END_ICS:
-                    String dateEndStr = cmdParts[2];
+                    String dateEndStr = currCmd.substring(currCmd.length() - 15);;
                     end = parseDateTime(dateEndStr);
                     break;
                 case LOCATION_ICS:
@@ -269,13 +273,11 @@ public class CalendarController {
         }
 
         if (frequency != -1) {
-            System.out.printf("Event: \n\tTitle: %s \n\tDate: %s \n\tStart: %s \n\tEnd: %s \n\tID: %s \n\tFreq: %d", title, date, start, end, id, frequency);
             CalendarEvent event = new CalendarRecurringEvent(title, date, start, end, id, frequency);
             event.setLocation(location);
             event.setNotes(notes);
             return event;
         } else {
-            System.out.printf("Event: \n\tTitle: %s \n\tDate: %s \n\tStart: %s \n\tEnd: %s \n\tID: %s\n", title, date, start, end, id);
             CalendarEvent event = new CalendarEvent(title, date, start, end, id);
             event.setLocation(location);
             event.setNotes(notes);
@@ -318,32 +320,72 @@ public class CalendarController {
         return new Date(year, month, day, hour, minute, sec);
     }
 
-    public static void exportCalendarToFile(String filename, CalendarModel calendar) throws IOException {
-        FileWriter out = new FileWriter(new File(filename));
+    public static void exportCalendarToFile(CalendarModel calendar) throws IOException {
+        FileWriter out = new FileWriter(new File(calendar.getName() + ".ics"));
         List<CalendarEvent> events = calendar.getEventList();
+        List<CalendarRecurringEvent> recEvents = calendar.getRecurringEventList();
 
         out.write(BEGIN_VCAL);
 
         for (CalendarEvent event : events) {
             writeEventToFile(event, out);
         }
+        for (CalendarRecurringEvent event : recEvents) {
+            writeRecEventToFile(event, out);
+        }
 
-        out.write(BEGIN_VCAL);
+        out.write(END_VCAL);
+        out.close();
     }
 
-    private static void writeEventToFile(CalendarEvent event, FileWriter out) {
+    private static void writeEventToFile(CalendarEvent event, FileWriter out) throws IOException {
         String toOutput = BEGIN_VEVENT + ICS_NL +
-                          SUMMARY_ICS + ':' + event.getTitle() + ICS_NL; +
-                          DATE_START_ICS + ';' + event.getStartTime()
+                          SUMMARY_ICS + ':' + event.getTitle() + ICS_NL +
+                          DATE_START_ICS + ';' + convertDateToString(event.getStartTime()) + ICS_NL +
+                          DATE_END_ICS + ';' + convertDateToString(event.getEndTime()) + ICS_NL +
+                          LOCATION_ICS + ':' + event.getLocation() + ICS_NL +
+                          DESCRIPTION_ICS + ':' + event.getNotes() + ICS_NL +
+                          STATUS_ICS + ICS_NL +
+                          UUID_ICS + ':' + event.getEventId() + ICS_NL +
+                          SEQUENCE_ICS + ICS_NL +
+                          END_VEVENT + ICS_NL;
+        out.write(toOutput);
+    }
+
+    private static void writeRecEventToFile(CalendarRecurringEvent event, FileWriter out) throws IOException {
+        String rec = "DAILY";
+        if (event.getInterval() == CalendarRecurringEvent.WEEKLY) {
+            rec = "WEEKLY";
+        } else if (event.getInterval() == CalendarRecurringEvent.MONTHLY) {
+            rec = "MONTHLY";
+        } else if (event.getInterval() == CalendarRecurringEvent.YEARLY) {
+            rec = "YEARLY";
+        }
+
+        String toOutput = BEGIN_VEVENT + ICS_NL +
+                SUMMARY_ICS + ':' + event.getTitle() + ICS_NL +
+                DATE_START_ICS + ';' + convertDateToString(event.getStartTime()) + ICS_NL +
+                DATE_END_ICS + ';' + convertDateToString(event.getEndTime()) + ICS_NL +
+                LOCATION_ICS + ':' + event.getLocation() + ICS_NL +
+                DESCRIPTION_ICS + ':' + event.getNotes() + ICS_NL +
+                RECUR_ICS + ':' + "FREQ=" + rec + ICS_NL +
+                STATUS_ICS + ICS_NL +
+                UUID_ICS + ':' + event.getEventId() + ICS_NL +
+                SEQUENCE_ICS + ICS_NL +
+                END_VEVENT + ICS_NL;
+        out.write(toOutput);
     }
 
     /**
+     * Converts a Date into a string representing the date in a form similar to
+     * RFC1123, but with none of the punctuation. The date is formatted as follows:
+     * yyyymmddThhmmss
      *
-     * @param d
-     * @return
+     * @param d The date to convert into a string
+     * @return The string representing the given date
      */
     private static String convertDateToString(Date d) {
-        String out = String.format("$04d%02d%02dT%02d%02d%02d",
+        String out = String.format("%04d%02d%02dT%02d%02d%02d",
                 d.getYear(), d.getMonth(), d.getDay(), d.getHours(), d.getMinutes(), d.getSeconds());
         return out;
     }
