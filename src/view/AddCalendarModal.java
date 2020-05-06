@@ -8,14 +8,14 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
 import javafx.scene.text.Font;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import model.CalendarEvent;
+import model.CalendarModel;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
+import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This modal can be used to add, edit, and display events, described in
@@ -49,12 +49,8 @@ public class AddCalendarModal extends Stage {
      *
      * @param editable this boolean indicates if the modal is editable
      *                 by default
-     * @param event this is the event, pass null if your'e creating a new
-     *              event, else the values from this will be used to populate
-     *              the modal, allowing for viewership, and this event will
-     *              be removed from the model if the user chooses to edit
      */
-    public AddCalendarModal(boolean editable, CalendarEvent event, CalendarController c, LocalDate date){
+    public AddCalendarModal(CalendarView view, boolean editable, List<CalendarController> c){
         // used to position the fields
         Pos position = Pos.BASELINE_LEFT;
         // used to determine the max width of the fields
@@ -64,7 +60,7 @@ public class AddCalendarModal extends Stage {
         initModality(Modality.APPLICATION_MODAL);
         this.setTitle("Add Event");
         BorderPane bp = new BorderPane();
-        bp.setPrefSize(300, 600);
+        bp.setPrefSize(300, 400);
 
         // common padding used
         Insets allSidesPadded = new Insets(15);
@@ -78,16 +74,15 @@ public class AddCalendarModal extends Stage {
         vb.setFillWidth(true);
         vb.setPadding(allSidesPadded);
 
-
         /*
          * Code for the Title label and text box
          */
-        TextField title = new TextField(event == null ? "Enter Event Title" : event.getTitle());
+        TextField title = new TextField("Name");
         title.setOnKeyTyped((e)->setWasChanged(editable));
         title.setMaxWidth(maxWidth);
         title.setEditable(editable);
 
-        Label titleLabel = new Label("Event Title");
+        Label titleLabel = new Label("Name your Calendar");
         titleLabel.setLabelFor(title);
         titleLabel.setFont(new Font(15));
         titleLabel.setAlignment(Pos.CENTER);
@@ -102,224 +97,105 @@ public class AddCalendarModal extends Stage {
         titleBox.setPadding(bottomPadded);
         HBox.setHgrow(titleAndLabel, Priority.ALWAYS);
 
+        /*
+         * Code to Pick the color
+         */
+        ColorPicker hold = new ColorPicker();
+        hold.getStyleClass().add("button");
+        hold.setMaxWidth(Double.MAX_VALUE);
+        HBox color = new HBox(hold);
+        color.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+        HBox.setHgrow(hold, Priority.ALWAYS);
+
+        Label colorLabel = new Label("Color");
+        colorLabel.setLabelFor(color);
+        colorLabel.setFont(new Font(15));
+        colorLabel.setAlignment(Pos.CENTER);
+
+        VBox colorAndLabel = new VBox(colorLabel, color);
+        colorAndLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        colorAndLabel.setFillWidth(true);
+
+        HBox colorBox = new HBox(colorAndLabel);
+        colorBox.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        colorBox.setAlignment(position);
+        colorBox.setPadding(bottomPadded);
+        HBox.setHgrow(colorAndLabel, Priority.ALWAYS);
 
         /*
-         * Code for the start Date label and date picker
+         * Code for loading a model from a file
          */
-        DatePicker startDate = new DatePicker(date);
-        startDate.setOnAction((e)->setWasChanged(editable));
-        startDate.setMaxWidth(maxWidth);
-        startDate.setDisable(!editable);
-        startDate.setStyle("-fx-opacity: 1;");
-        startDate.getEditor().setStyle("-fx-opacity: 1;");
 
-        Label startDateLabel = new Label("Start Date");
-        startDateLabel.setLabelFor(startDate);
-        startDateLabel.setFont(new Font(15));
-        startDateLabel.setAlignment(Pos.CENTER);
+        Label gotFileLabel = new Label();
+        gotFileLabel.setLabelFor(gotFileLabel);
+        gotFileLabel.setFont(new Font(15));
+        gotFileLabel.setAlignment(Pos.CENTER);
 
-        VBox startDateAndLabel = new VBox(startDateLabel, startDate);
-        startDateAndLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        startDateAndLabel.setAlignment(position);
-        startDateAndLabel.setFillWidth(true);
+        // holder for the file the filer picker will get
+        AtomicReference<File> gotFile = new AtomicReference<>();
 
-        HBox startDateBox = new HBox(startDateAndLabel);
-        startDateBox.setAlignment(Pos.CENTER);
-        startDateBox.setPadding(bottomPadded);
-        HBox.setHgrow(startDateAndLabel, Priority.ALWAYS);
+        Button file = new Button("File");
+        file.setMaxWidth(maxWidth);
 
+        Label fileLabel = new Label("Load from a File");
+        fileLabel.setLabelFor(file);
+        fileLabel.setFont(new Font(15));
+        fileLabel.setAlignment(Pos.CENTER);
 
-        /*
-         * Code for the start time selector
-         */
-        int initialStartTime = event == null ? 12 : event.getStartTime().getHours();
-        Spinner<Integer> startTime =
-                new Spinner<>( new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, initialStartTime));
-        startTime.setOnMouseClicked((e)->changed=true);
-        startTime.setOnKeyTyped((e)->changed=true);
-        startTime.setDisable(!editable);
-        startTime.setStyle("-fx-opacity: 1;");
-        startTime.getEditor().setStyle("-fx-opacity: 1;");
-        startTime.setPrefWidth(55);
-        startTime.setMinWidth(55);
+        VBox fileAndLabel = new VBox(fileLabel, file);
+        fileAndLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        fileAndLabel.setFillWidth(true);
 
-        Label startTimeLabel = new Label("Start Time");
-        startTimeLabel.setLabelFor(startTime);
-        startTimeLabel.setFont(new Font(15));
-        startTimeLabel.setAlignment(Pos.CENTER);
+        HBox fileBox = new HBox(fileAndLabel);
+        fileBox.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        fileBox.setAlignment(position);
+        fileBox.setPadding(bottomPadded);
+        HBox.setHgrow(fileAndLabel, Priority.ALWAYS);
 
-        VBox startTimeAndLabel = new VBox(startTimeLabel, startTime);
-        startTimeAndLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        startTimeAndLabel.setAlignment(position);
-        startTimeAndLabel.setFillWidth(true);
-
-        HBox startTimeBox = new HBox(startTimeAndLabel);
-        startTimeBox.setAlignment(Pos.CENTER);
-        startTimeBox.setPadding(bottomPadded);
-        HBox.setHgrow(startTimeAndLabel, Priority.ALWAYS);
-
-
-        /*
-         * Code for the end time selector
-         */
-        int initialEndTime = event == null ? 12 : event.getEndTime().getHours();
-        Spinner<Integer> endTime =
-                new Spinner<>( new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, initialEndTime));
-        endTime.setOnMouseClicked((e)->changed=true);
-        endTime.setOnKeyTyped((e)->changed=true);
-
-        endTime.setDisable(!editable);
-        endTime.setStyle("-fx-opacity: 1;");
-        endTime.getEditor().setStyle("-fx-opacity: 1;");
-        endTime.setPrefWidth(55);
-        endTime.setMinWidth(55);
-
-        Label endTimeLabel = new Label("End Time");
-        endTimeLabel.setLabelFor(endTime);
-        endTimeLabel.setFont(new Font(15));
-        endTimeLabel.setAlignment(Pos.CENTER);
-
-        VBox endTimeAndLabel = new VBox(endTimeLabel, endTime);
-        endTimeAndLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        endTimeAndLabel.setAlignment(position);
-        endTimeAndLabel.setFillWidth(true);
-
-        HBox endTimeBox = new HBox(endTimeAndLabel);
-        endTimeBox.setAlignment(Pos.CENTER);
-        endTimeBox.setPadding(bottomPadded);
-        HBox.setHgrow(endTimeAndLabel, Priority.ALWAYS);
-
-
-        /*
-         * Code for the Location label and text box
-         */
-        TextField location = new TextField(event == null ? "Enter Location" : event.getLocation());
-        location.setOnKeyTyped((e)->setWasChanged(editable));
-        location.setMaxWidth(maxWidth);
-        location.setEditable(editable);
-
-        Label locationLabel = new Label("Location");
-        locationLabel.setLabelFor(location);
-        locationLabel.setFont(new Font(15));
-        locationLabel.setAlignment(Pos.CENTER);
-
-        VBox locationAndLabel = new VBox(locationLabel, location);
-        locationAndLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        locationAndLabel.setAlignment(position);
-        locationAndLabel.setFillWidth(true);
-
-        HBox locationBox = new HBox(locationAndLabel);
-        locationBox.setAlignment(Pos.CENTER);
-        locationBox.setPadding(bottomPadded);
-        HBox.setHgrow(locationAndLabel, Priority.ALWAYS);
-
-
-        /*
-         * Code for the notes label and text area
-         */
-        TextArea notes = new TextArea(event == null ? "Enter Notes" : event.getNotes());
-        notes.setOnKeyTyped((e)->setWasChanged(editable));
-        notes.setMaxWidth(maxWidth);
-        notes.setPrefHeight(300);
-        notes.setEditable(editable);
-
-        Label notesLabel = new Label("Notes");
-        notesLabel.setLabelFor(notes);
-        notesLabel.setFont(new Font(15));
-        notesLabel.setAlignment(Pos.CENTER);
-
-        VBox notesAndLabel = new VBox(notesLabel, notes);
-        notesAndLabel.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        notesAndLabel.setAlignment(Pos.CENTER_LEFT);
-        notesAndLabel.setFillWidth(true);
-
-        HBox notesBox = new HBox(notesAndLabel);
-        notesBox.setAlignment(Pos.CENTER);
-        HBox.setHgrow(notesAndLabel, Priority.ALWAYS);
-
+        file.setOnMouseClicked((e)->{
+            FileChooser f = new FileChooser();
+            f.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("ICS", "*.ics")
+            );
+            f.setTitle("Open Resource File");
+            gotFile.set(f.showOpenDialog(view.stage));
+            if(gotFile.get() != null){
+                gotFileLabel.setText(gotFile.get().getName() + "  ✔");
+                fileAndLabel.getChildren().add(gotFileLabel);
+            }
+        });
 
         /*
          * Code for the Right event button, by default this is the "save event"
          * button, it will delete an edited event / create a new event, or
          * just close the modal
          */
-        Button rightEventButton = new Button("Save Event");
+        Button rightEventButton = new Button("Save Calendar");
         rightEventButton.setOnMouseClicked((e)->{
-
-            Date newDate = localDateAndHourToDate(startDate.getValue(), 0);
-
-            Date newStart = localDateAndHourToDate(
-                    startDate.getValue(), startTime.getValue());
-            Date newEnd = localDateAndHourToDate(
-                    startDate.getValue(), endTime.getValue());
-
-            if(event != null &&  changed){
-                c.removeEvent(event);
+            CalendarModel m = null;
+            if(gotFile.get() != null){
+                // code for loading a .ics file into a model
+            }else{
+                m = new CalendarModel(title.getText(), hold.getValue());
             }
-
-            if(changed){
-                System.out.println("Added");
-                c.addEvent(
-                        title.getText(), newDate, newStart, newEnd,
-                        location.getText(), notes.getText());
-            }
-
-            // print out diagnostic information
-            /*
-            System.out.println("Title : " + title.getText());
-            System.out.println("Start Date : " + newStart);
-            System.out.println("End Date : " + newEnd);
-            System.out.println("Location : " + location.getText());
-            System.out.println("Notes :\n" + notes.getText());
-             */
+            m.addObserver(view);
+            c.add(new CalendarController(m));
+            view.update(null, null);
             this.close();
         });
         rightEventButton.setMaxWidth(Double.MAX_VALUE);
 
-        /*
-         * Code for the Left event button, sets the event as editable,
-         * does this by launching a new modal and closing this one
-         */
-        Button leftEventButton = new Button("Edit Event");
-        leftEventButton.setOnMouseClicked(e->{
-            AddEventModal m = new AddEventModal(true, event, c, date);
-            m.show();
-            this.close();
-        });
-        leftEventButton.setMaxWidth(Double.MAX_VALUE);
-
-        Button removeEvent = new Button("Remove Event");
-        removeEvent.setOnMouseClicked(e->{
-            if(event != null){
-                c.removeEvent(event);
-            }
-            this.close();
-        });
-        removeEvent.setMaxWidth(Double.MAX_VALUE);
-
-        /*
-         * Code for the bottom buttons box, add or remove from the list to
-         * change the buttons
-         */
-        ArrayList<Button> buttons =
-                new ArrayList<>(Arrays.asList(removeEvent, leftEventButton, rightEventButton));
-
-        HBox buttonBox = new HBox();
-        for(Button b : buttons){
-            buttonBox.getChildren().add(b);
-            HBox.setHgrow(b, Priority.ALWAYS);
-        }
+        HBox buttonBox = new HBox(rightEventButton);
         buttonBox.setAlignment(Pos.BASELINE_CENTER);
         buttonBox.setPadding(new Insets(0,15,15,15));
+        HBox.setHgrow(rightEventButton, Priority.ALWAYS);
 
 
         // put everything in the VBox
         vb.getChildren().add(titleBox);
-        vb.getChildren().add(startDateBox);
-        vb.getChildren().add(startTimeBox);
-        vb.getChildren().add(endTimeBox);
-        vb.getChildren().add(locationBox);
-        vb.getChildren().add(notesBox);
+        vb.getChildren().add(colorBox);
+        vb.getChildren().add(fileBox);
 
         bp.setCenter(vb);
         bp.setBottom(buttonBox);
@@ -327,27 +203,4 @@ public class AddCalendarModal extends Stage {
         Scene scene = new Scene(bp);
         this.setScene(scene);
     }
-
-    /**
-     * Handles the logic of converting the information from the local date
-     * and hour integer into a java "Date" object
-     * @param date the local date being converted
-     * @param hour the hour on the local date to also be converted
-     * @return the new java "date" representation of the above info
-     */
-    public static Date localDateAndHourToDate(LocalDate date, int hour){
-        SimpleDateFormat formatter=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-        String dateString = date.toString();
-        dateString += " " + hour + ":00:00";
-
-        Date ret = null;
-        try {
-            ret = formatter.parse(dateString);
-        } catch (ParseException parseException) {
-            parseException.printStackTrace();
-        }
-        return ret;
-    }
-
 }

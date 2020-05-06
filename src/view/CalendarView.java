@@ -30,6 +30,8 @@ public class CalendarView extends javafx.application.Application implements Obse
     protected VBox centerPane;
     private Scene scene;
 
+    protected Stage stage;
+
     // had to make this global so it could be changed based on the
     // arrows in the different views
     DatePicker startDate = new DatePicker(java.time.LocalDate.now());
@@ -79,6 +81,7 @@ public class CalendarView extends javafx.application.Application implements Obse
         // why is the width maxed?
         //primaryStage.setMaxWidth(1400);
         primaryStage.setMaximized(true);
+        stage = primaryStage;
 
         //TODO set this to load a users calender rather than a default empty one
         m = new CalendarModel("TestCalendar", Color.LIGHTBLUE);
@@ -128,6 +131,7 @@ public class CalendarView extends javafx.application.Application implements Obse
 
         startDate.setValue(instant.atZone(defaultZoneId).toLocalDate());
         setCenter();
+        sideBarUI();
     }
 
     /**
@@ -180,6 +184,21 @@ public class CalendarView extends javafx.application.Application implements Obse
         addEventButton.setOnAction(event -> {
             ZoneId defaultZoneId = ZoneId.systemDefault();
             Instant instant = date.get().toInstant();
+
+            // following logic checks if a calender exists or not, only launches the modal if one does
+            if(currentController == null && c.size() <= 0){
+                // the user has no calendars, alert them and close
+                Alert noCal = new Alert(Alert.AlertType.WARNING);
+                noCal.setHeaderText("Error");
+                noCal.setContentText("You have no calendars to add to.\n" +
+                        "Please create a new calendar.");
+                noCal.showAndWait();
+                return;
+            }else if(currentController == null && !c.isEmpty()){
+                // currentController is unset, but their exists a controller
+                currentController = c.get(0);
+            }
+
             AddEventModal modalInstance = new AddEventModal(true,null,currentController, instant.atZone(defaultZoneId).toLocalDate());
             modalInstance.show();
         });
@@ -195,35 +214,41 @@ public class CalendarView extends javafx.application.Application implements Obse
 
         Button addCalenders = new Button("Add a new Calender");
         addCalenders.setOnMouseClicked((e)->{
-            //TODO add a calender and switch to it
+            AddCalendarModal m = new AddCalendarModal(this, true, c);
+            m.show();
         });
         addCalenders.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
-        Button removeCalenders = new Button("Remove Current Calender");
-        removeCalenders.setOnMouseClicked((e)->{
-            Alert x = new Alert(Alert.AlertType.WARNING);
-            x.setTitle("Warning");
-            x.setHeaderText("Are you sure?");
-            x.showAndWait();
-
-            //TODO, remove the current calender
-        });
-        removeCalenders.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-
         Label switchLabel = new Label("Choose your Calendar");
         ChoiceBox<CalendarController> switchCalenders = new ChoiceBox<>();
+        switchCalenders.setValue(currentController);
         switchCalenders.setOnAction((e)->{
-            switchCalenders.getValue();
+            currentController = switchCalenders.getValue();
         });
         for(CalendarController controller : c){
             switchCalenders.getItems().add(controller);
         }
         switchCalenders.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
-        VBox labelAndSwitch = new VBox(switchLabel, switchCalenders);
+        Button removeCalenders = new Button("Remove");
+        removeCalenders.setOnMouseClicked((e)->{
+            Alert x = new Alert(Alert.AlertType.WARNING);
+            x.setTitle("Warning");
+            x.setHeaderText("Are you sure?");
+            x.showAndWait();
+
+            c.remove(currentController);
+            currentController = null;
+            update(null, null);
+        });
+        removeCalenders.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+        HBox switchAndRemove = new HBox(switchCalenders, removeCalenders);
+
+        VBox labelAndSwitch = new VBox(switchLabel, switchAndRemove);
         labelAndSwitch.setSpacing(5);
 
-        VBox addSwitchCalenders = new VBox(addCalenders, removeCalenders, labelAndSwitch);
+        VBox addSwitchCalenders = new VBox(addCalenders, labelAndSwitch);
         addSwitchCalenders.setSpacing(15);
         sideBar.setBottom(addSwitchCalenders);
 

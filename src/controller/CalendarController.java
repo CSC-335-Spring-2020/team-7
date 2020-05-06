@@ -157,4 +157,12 @@ public class CalendarController {
     public String toString() {
         return getName();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CalendarController that = (CalendarController) o;
+        return model.getName().equals(that.getName());
+    }
 }
