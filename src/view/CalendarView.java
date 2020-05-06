@@ -1,32 +1,28 @@
 package view;
 
 import controller.CalendarController;
-import javafx.collections.ObservableList;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.text.*;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.CalendarModel;
 
-import javax.imageio.ImageIO;
-import java.io.*;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
+ * This class constructs the view and handles what is displayed and passes user inputs
+ * into the controller.
  * @author Nicholas Lindenberg
- * Current revision VIEW_2 Month UI
- * Month UI statically implemented, need to be able to change between months.
+ * @author Mahmood Gladney
  */
 public class CalendarView extends javafx.application.Application implements Observer {
     private BorderPane bp;
@@ -77,6 +73,12 @@ public class CalendarView extends javafx.application.Application implements Obse
         bp.setCenter(centerPane);
     }
 
+    /**
+     * Start method, loads up the application
+     *
+     * @param primaryStage the primary stage
+     * @throws Exception if something in javaFX goes wrong
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         // TODO: Add and set icon for calendar window
@@ -103,7 +105,8 @@ public class CalendarView extends javafx.application.Application implements Obse
     }
 
     /**
-     * Populates month view
+     * Populates month view based on the value of "currView" used to
+     * switch between the month, week, and day views
      */
     protected void setCenter() {
         //TODO: Integrate with model and controller so that dates are dynamic
@@ -122,8 +125,8 @@ public class CalendarView extends javafx.application.Application implements Obse
     /**
      * This method will be called whenever something in the model
      * is updated default implementation just calls set center again
-     * @param o
-     * @param arg
+     * @param o the data. we don't use this
+     * @param arg some argument. we don't use this
      */
     @Override
     public void update(Observable o, Object arg) {
@@ -215,28 +218,16 @@ public class CalendarView extends javafx.application.Application implements Obse
         sideBar.setPadding(new Insets(15,15,15,15));
         sideBar.setCenter(v);
 
+        /*
+         * The following code is for the adding and removing of
+         * calendars
+         */
         Button addCalenders = new Button("Add a new Calender");
         addCalenders.setOnMouseClicked((e)->{
             AddCalendarModal m = new AddCalendarModal(this, true, c);
             m.show();
         });
         addCalenders.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-
-        Button saveSelectedCalendar = new Button("Save selected Calendar");
-        saveSelectedCalendar.setOnMouseClicked((e)->{
-            // TODO save calendar
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Save Calendar");
-            fileChooser.getExtensionFilters().addAll(
-                    new FileChooser.ExtensionFilter("ICS", "*.ics")
-            );
-            File file = fileChooser.showSaveDialog(stage);
-            if (file != null) {
-                String filePath = file.getAbsolutePath();
-                //TODO Save the currentController to this path
-            }
-        });
-        saveSelectedCalendar.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
         Label switchLabel = new Label("Choose your Calendar");
         ChoiceBox<CalendarController> switchCalenders = new ChoiceBox<>();
@@ -267,7 +258,7 @@ public class CalendarView extends javafx.application.Application implements Obse
         VBox labelAndSwitch = new VBox(switchLabel, switchAndRemove);
         labelAndSwitch.setSpacing(5);
 
-        VBox addSwitchCalenders = new VBox(addCalenders, saveSelectedCalendar, labelAndSwitch);
+        VBox addSwitchCalenders = new VBox(addCalenders, labelAndSwitch);
         addSwitchCalenders.setSpacing(15);
         sideBar.setBottom(addSwitchCalenders);
 
