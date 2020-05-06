@@ -1,29 +1,28 @@
 package view;
 
 import controller.CalendarController;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.text.*;
 import javafx.stage.Stage;
 import model.CalendarModel;
 
-import java.io.PipedReader;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
+ * This class constructs the view and handles what is displayed and passes user inputs
+ * into the controller.
  * @author Nicholas Lindenberg
- * Current revision VIEW_2 Month UI
- * Month UI statically implemented, need to be able to change between months.
+ * @author Mahmood Gladney
  */
 public class CalendarView extends javafx.application.Application implements Observer {
     private BorderPane bp;

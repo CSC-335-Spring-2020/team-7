@@ -16,8 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This class allows for the construction of the calender app in a day view
- * setting, inherits from the CalenderView main class, and uses methods /
- * fields present in that class
+ * setting.
  *
  * @author Amin Sennour
  */

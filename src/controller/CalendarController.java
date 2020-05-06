@@ -5,7 +5,6 @@ import model.CalendarEvent;
 import model.CalendarModel;
 import model.CalendarRecurringEvent;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -145,6 +144,20 @@ public class CalendarController {
         model.addEvent(date, event);
     }
 
+    /**
+     * Takes the information needed to create a recurring event, creates it, and adds it
+     * to the calender model
+     *
+     * @param title title of the event
+     * @param date date on which the event is taking place
+     * @param startTime the time which the event starts on
+     * @param endTime the time which the event ends on
+     * @param location optional, pass empty string if not wanted, the location the
+     *                 event should take place
+     * @param notes optional, pass empty string if not wanted, any notes attached
+     *              to the event
+     * @param interval time between events repeating
+     */
     public void addRecurringEvent(String title, Date date, Date startTime, Date endTime, String location, String notes, int interval){
         String uuid = UUID.randomUUID().toString();
 

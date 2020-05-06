@@ -16,8 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This class allows for the construction of the calender app in a week view
- * setting, inherits from the CalenderView main class, and uses methods /
- * fields present in that class
+ * setting.
  *
  * @author Amin Sennour
  * @author Mahmood Gladney
@@ -31,7 +30,8 @@ public class WeekView {
      * The setCenter method which replaces the center with the
      * day view
      */
-    protected static void setCenter(CalendarView calendarView, List<CalendarController> calenders,AtomicReference<Date> date, Date[] datesOfWeek, VBox centerPane){
+    protected static void setCenter(CalendarView calendarView, List<CalendarController> calenders,
+                                    AtomicReference<Date> date, Date[] datesOfWeek, VBox centerPane){
         /*
          * Code for the forward / back buttons
          */

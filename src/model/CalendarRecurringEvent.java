@@ -2,6 +2,10 @@ package model;
 
 import java.util.*;
 
+/**
+ * This subclass of CalendarEvent is used for events that recur at a
+ * regular interval
+ */
 public class CalendarRecurringEvent extends CalendarEvent {
 
     public static final int DAILY = Calendar.DATE;
@@ -11,6 +15,10 @@ public class CalendarRecurringEvent extends CalendarEvent {
 
     public static final Map<String, Integer> intervals = buildMap();
 
+    /**
+     * Constructs a map for reference and returns it
+     * @return ret
+     */
     public static Map<String, Integer> buildMap(){
         Map<String, Integer> ret = new TreeMap<>();
         ret.put("DAILY", DAILY);
@@ -22,6 +30,15 @@ public class CalendarRecurringEvent extends CalendarEvent {
 
     private int interval;
 
+    /**
+     * Constructs a new recurring event object
+     * @param title title of the event
+     * @param date Date object with the current date, zero out the time
+     * @param start Date object with the start time/day
+     * @param end Date object with the end time/day
+     * @param id unique id string
+     * @param interval number of days between repeat events
+     */
     public CalendarRecurringEvent(String title, Date date, Date start, Date end, String id, int interval) {
         super(title, date, start, end, id);
         this.interval = interval;
