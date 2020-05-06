@@ -73,6 +73,10 @@ public class CalendarEvent {
         return this.eventId;
     }
 
+    /**
+     * Exists to be overridden by subclasses, by default return's "NONE"
+     * @return the string "NONE" to indicate it has no interval
+     */
     public String getInterval(){
         return "NONE";
     }
