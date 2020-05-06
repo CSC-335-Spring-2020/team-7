@@ -20,7 +20,7 @@ import java.util.*;
 
 public class CalendarController {
 
-    CalendarModel model;
+    public CalendarModel model;
 
     private static final String BEGIN_VEVENT = "BEGIN:VEVENT";
     private static final String END_VEVENT = "END:VEVENT";
@@ -368,8 +368,12 @@ public class CalendarController {
         return new Date(year, month, day, hour, minute, sec);
     }
 
-    public static void exportCalendarToFile(CalendarModel calendar) throws IOException {
-        FileWriter out = new FileWriter(new File(calendar.getName() + ".ics"));
+    public static void exportCalendarToFile(CalendarModel calendarModel) throws IOException {
+        exportCalendarToFile(calendarModel, calendarModel.getName() + ".ics");
+    }
+
+    public static void exportCalendarToFile(CalendarModel calendar, String pathname) throws IOException {
+        FileWriter out = new FileWriter(new File(pathname));
         List<CalendarEvent> events = calendar.getEventList();
         List<CalendarRecurringEvent> recEvents = calendar.getRecurringEventList();
 

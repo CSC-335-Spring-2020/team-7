@@ -9,9 +9,12 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.CalendarModel;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.*;
@@ -229,6 +232,25 @@ public class CalendarView extends javafx.application.Application implements Obse
         });
         addCalenders.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
+        Button saveCalendars = new Button("Save current Calendar");
+        saveCalendars.setOnMouseClicked((e)->{
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save Calendar");
+            fileChooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("ICS", "*.ics")
+            );
+            File file = fileChooser.showSaveDialog(stage);
+            if (file != null) {
+                String filePath = file.getAbsolutePath();
+                try {
+                    CalendarController.exportCalendarToFile(currentController.model, filePath);
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+            }
+        });
+        saveCalendars.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
         Label switchLabel = new Label("Choose your Calendar");
         ChoiceBox<CalendarController> switchCalenders = new ChoiceBox<>();
         switchCalenders.setValue(currentController);
@@ -258,7 +280,7 @@ public class CalendarView extends javafx.application.Application implements Obse
         VBox labelAndSwitch = new VBox(switchLabel, switchAndRemove);
         labelAndSwitch.setSpacing(5);
 
-        VBox addSwitchCalenders = new VBox(addCalenders, labelAndSwitch);
+        VBox addSwitchCalenders = new VBox(addCalenders, saveCalendars, labelAndSwitch);
         addSwitchCalenders.setSpacing(15);
         sideBar.setBottom(addSwitchCalenders);
 
