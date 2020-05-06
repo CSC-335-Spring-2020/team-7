@@ -2,6 +2,7 @@ package view;
 
 import controller.CalendarController;
 import javafx.collections.ObservableList;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -9,10 +10,12 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.CalendarModel;
 
-import java.io.PipedReader;
+import javax.imageio.ImageIO;
+import java.io.*;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -219,6 +222,22 @@ public class CalendarView extends javafx.application.Application implements Obse
         });
         addCalenders.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
+        Button saveSelectedCalendar = new Button("Save selected Calendar");
+        saveSelectedCalendar.setOnMouseClicked((e)->{
+            // TODO save calendar
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save Calendar");
+            fileChooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("ICS", "*.ics")
+            );
+            File file = fileChooser.showSaveDialog(stage);
+            if (file != null) {
+                String filePath = file.getAbsolutePath();
+                //TODO Save the currentController to this path
+            }
+        });
+        saveSelectedCalendar.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
         Label switchLabel = new Label("Choose your Calendar");
         ChoiceBox<CalendarController> switchCalenders = new ChoiceBox<>();
         switchCalenders.setValue(currentController);
@@ -248,7 +267,7 @@ public class CalendarView extends javafx.application.Application implements Obse
         VBox labelAndSwitch = new VBox(switchLabel, switchAndRemove);
         labelAndSwitch.setSpacing(5);
 
-        VBox addSwitchCalenders = new VBox(addCalenders, labelAndSwitch);
+        VBox addSwitchCalenders = new VBox(addCalenders, saveSelectedCalendar, labelAndSwitch);
         addSwitchCalenders.setSpacing(15);
         sideBar.setBottom(addSwitchCalenders);
 

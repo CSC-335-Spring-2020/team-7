@@ -175,7 +175,7 @@ public class AddCalendarModal extends Stage {
         rightEventButton.setOnMouseClicked((e)->{
             CalendarModel m = null;
             if(gotFile.get() != null){
-                // code for loading a .ics file into a model
+                // TODO code for loading a .ics file into a model
             }else{
                 m = new CalendarModel(title.getText(), hold.getValue());
             }
