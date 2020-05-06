@@ -1,10 +1,13 @@
 package model;
 
+import javafx.scene.paint.Color;
+
 import javax.swing.plaf.synth.SynthUI;
 import java.util.*;
 
 public class CalendarModel extends Observable{
     private String name;
+    private Color color;
     private TreeMap<Date, List<CalendarEvent>> eventMap;
     private List<CalendarRecurringEvent> recurringEventList;
 
@@ -15,17 +18,20 @@ public class CalendarModel extends Observable{
         this.recurringEventList = recurringEventList;
     }
 
-    public CalendarModel(String name){
+    public CalendarModel(String name, Color color){
         this.name = name;
+        this.color = color;
         eventMap = new TreeMap<>();
         recurringEventList = new ArrayList<CalendarRecurringEvent>();
     }
     public String getName(){
         return name;
     }
+    public Color getColor() { return color; }
     public void setName(String name){
         this.name = name;
     }
+    public void setColor(Color c){ this.color = c; }
     public void addEvent(Date date, CalendarEvent event){
         if (eventMap.containsKey(date)) {
             eventMap.get(date).add(event);

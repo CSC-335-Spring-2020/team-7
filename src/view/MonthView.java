@@ -129,13 +129,16 @@ public class MonthView {
                     for(CalendarEvent e : events){
                         Label l = new Label(e.getTitle() + " | " + controller.getName());
                         l.maxWidthProperty().bind(gp.widthProperty().divide(gp.impl_getColumnCount()).subtract(10));
-                        l.setOnMouseClicked((event)->{
+                        HBox labelAndColor = new HBox(l);
+                        labelAndColor.setBackground(new Background(new BackgroundFill(controller.getColor(), CornerRadii.EMPTY, Insets.EMPTY)));
+                        labelAndColor.setPadding(new Insets(5,5,5,5));
+                        labelAndColor.setOnMouseClicked((event)->{
                             ZoneId defaultZoneId = ZoneId.systemDefault();
                             Instant instant = e.getDate().toInstant();
                             AddEventModal m = new AddEventModal(false, e, controller, instant.atZone(defaultZoneId).toLocalDate());
                             m.show();
                         });
-                        content.getChildren().add(l);
+                        content.getChildren().add(labelAndColor);
                     }
                 }
             }

@@ -81,7 +81,7 @@ public class CalendarView extends javafx.application.Application implements Obse
         primaryStage.setMaximized(true);
 
         //TODO set this to load a users calender rather than a default empty one
-        m = new CalendarModel("TestCalendar");
+        m = new CalendarModel("TestCalendar", Color.LIGHTBLUE);
         m.addObserver(this);
         currentController = new CalendarController(m);
         c.add(currentController);

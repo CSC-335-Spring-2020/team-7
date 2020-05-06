@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * This class is a static class which exists to provide the "day" method
@@ -127,13 +128,20 @@ public class Day {
                 Label title = new Label(e.getTitle());
                 title.setPadding(new Insets(5,5,5,5));
                 title.setAlignment(Pos.CENTER_RIGHT);
-                title.setOnMouseClicked((event)->{
+
+
+                StackPane labelAndColor = new StackPane(title);
+                labelAndColor.setBackground(new Background(new BackgroundFill(c.getColor(), CornerRadii.EMPTY, Insets.EMPTY)));
+                labelAndColor.setOnMouseClicked((event)->{
                     ZoneId defaultZoneId = ZoneId.systemDefault();
                     Instant instant = e.getDate().toInstant();
                     AddEventModal m = new AddEventModal(false, e, c, instant.atZone(defaultZoneId).toLocalDate());
                     m.show();
                 });
-                mainGrid.addRow(i, title);
+
+                StackPane marginToColor = new StackPane(labelAndColor);
+                marginToColor.setPadding(new Insets(5,5,5,5));
+                mainGrid.addRow(i, marginToColor);
             }
 
             ColumnConstraints cols = new ColumnConstraints();

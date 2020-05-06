@@ -1,5 +1,6 @@
 package controller;
 
+import javafx.scene.paint.Color;
 import model.CalendarEvent;
 import model.CalendarModel;
 
@@ -35,6 +36,14 @@ public class CalendarController {
      */
     public void setName(String name){
         model.setName(name);
+    }
+
+    public Color getColor(){
+        return model.getColor();
+    }
+
+    public void setColor(Color c){
+        model.setColor(c);
     }
 
     /**
