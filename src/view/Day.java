@@ -10,8 +10,11 @@ import model.CalendarEvent;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
+import java.util.Stack;
 
 /**
  * This class is a static class which exists to provide the "day" method
@@ -74,8 +77,8 @@ public class Day {
      */
     private static void addTime(boolean showTime, GridPane mainGrid){
         ColumnConstraints cols = new ColumnConstraints();
-        cols.setMaxWidth(30);
-        cols.setMinWidth(30);
+        cols.setMaxWidth(showTime ?  30 : 0);
+        cols.setMinWidth(showTime ?  30 : 0);
         cols.setHgrow(Priority.ALWAYS);
         mainGrid.getColumnConstraints().add(cols);
 
@@ -110,15 +113,35 @@ public class Day {
             int time = e.getStartTime().getHours();
             int endTime = e.getEndTime().getHours();
 
+            if(endTime < time){
+                System.out.println("hmmmmm event " + e.getEventId() + "has an end time after it's start time, flipping the times" +
+                        "because that's the only logical thing the user could have meant");
+
+                int hold = endTime;
+                endTime = time;
+                time = hold;
+
+                e.setNotes(e.getNotes() + "\n\nYour times are flipped, idiot :)\n\n");
+            }
+
             for(int i = time; i <=endTime; i++){
                 Label title = new Label(e.getTitle());
                 title.setPadding(new Insets(5,5,5,5));
                 title.setAlignment(Pos.CENTER_RIGHT);
-                title.setOnMouseClicked((event)->{
-                    AddEventModal m = new AddEventModal(false, e, c);
+
+
+                StackPane labelAndColor = new StackPane(title);
+                labelAndColor.setBackground(new Background(new BackgroundFill(c.getColor(), CornerRadii.EMPTY, Insets.EMPTY)));
+                labelAndColor.setOnMouseClicked((event)->{
+                    ZoneId defaultZoneId = ZoneId.systemDefault();
+                    Instant instant = e.getDate().toInstant();
+                    AddEventModal m = new AddEventModal(false, e, c, instant.atZone(defaultZoneId).toLocalDate());
                     m.show();
                 });
-                mainGrid.addRow(i, title);
+
+                StackPane marginToColor = new StackPane(labelAndColor);
+                marginToColor.setPadding(new Insets(5,5,5,5));
+                mainGrid.addRow(i, marginToColor);
             }
 
             ColumnConstraints cols = new ColumnConstraints();

@@ -1,16 +1,13 @@
 package controller;
 
+import javafx.scene.paint.Color;
 import model.CalendarEvent;
 import model.CalendarModel;
 import model.CalendarRecurringEvent;
 
 import java.io.*;
-import java.lang.reflect.Array;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 /**
  * This is the controller for the Calender App.
@@ -18,6 +15,7 @@ import java.util.regex.Pattern;
  * Purpose : To take data from the model, organize it, and send it to the view,
  * as well as taking data from the view, and adding it to the model.
  *
+ * @author Amin Sennour
  */
 
 public class CalendarController {
@@ -61,6 +59,22 @@ public class CalendarController {
      */
     public void setName(String name){
         model.setName(name);
+    }
+
+    /**
+     * Getter for the calendar color
+     * @return the color
+     */
+    public Color getColor(){
+        return model.getColor();
+    }
+
+    /**
+     * Setter for the calendar color
+     * @param c the new color
+     */
+    public void setColor(Color c){
+        model.setColor(c);
     }
 
     /**
@@ -110,6 +124,11 @@ public class CalendarController {
     public List<CalendarEvent> getEventsOnDay(Date day){
         // cloning the list of that the view editing what's returned from this
         // method doesn't change the model
+
+        day.setHours(0);
+        day.setMinutes(0);
+        day.setSeconds(0);
+
         List<CalendarEvent> events = model.getEvents(day);
         if(events != null){
             return new ArrayList<>(events);
@@ -148,6 +167,36 @@ public class CalendarController {
     }
 
     /**
+     * Takes the information needed to create a recurring event, creates it, and adds it
+     * to the calender model
+     *
+     * @param title title of the event
+     * @param date date on which the event is taking place
+     * @param startTime the time which the event starts on
+     * @param endTime the time which the event ends on
+     * @param location optional, pass empty string if not wanted, the location the
+     *                 event should take place
+     * @param notes optional, pass empty string if not wanted, any notes attached
+     *              to the event
+     * @param interval time between events repeating
+     */
+    public void addRecurringEvent(String title, Date date, Date startTime, Date endTime, String location, String notes, int interval){
+        String uuid = UUID.randomUUID().toString();
+
+        // set the time of the "day" of the event to 0 so that the model doesn't
+        // have to deal with makings May 5 12pm and May 5 11am the same slot
+        date.setHours(12); // set these to take place at noon every "date" so they can be searched for easily
+        date.setMinutes(0);
+        date.setSeconds(0);
+
+        CalendarRecurringEvent event = new CalendarRecurringEvent(title, date, startTime, endTime, uuid, interval);
+
+        event.setLocation(location);
+        event.setNotes(notes);
+        model.addRecurringEvent(event);
+    }
+
+    /**
      * Used to remove an event when the user has access to the CalenderEvent
      * object
      *
@@ -165,7 +214,6 @@ public class CalendarController {
     public void removeEvent(String uuid){
         model.removeEvent(uuid);
     }
-
 
     /**
      * Reads an .ics file and creates a new CalendarModel from it
@@ -353,14 +401,7 @@ public class CalendarController {
     }
 
     private static void writeRecEventToFile(CalendarRecurringEvent event, FileWriter out) throws IOException {
-        String rec = "DAILY";
-        if (event.getInterval() == CalendarRecurringEvent.WEEKLY) {
-            rec = "WEEKLY";
-        } else if (event.getInterval() == CalendarRecurringEvent.MONTHLY) {
-            rec = "MONTHLY";
-        } else if (event.getInterval() == CalendarRecurringEvent.YEARLY) {
-            rec = "YEARLY";
-        }
+        String rec = event.getInterval();
 
         String toOutput = BEGIN_VEVENT + ICS_NL +
                 SUMMARY_ICS + ':' + event.getTitle() + ICS_NL +
@@ -388,5 +429,27 @@ public class CalendarController {
         String out = String.format("%04d%02d%02dT%02d%02d%02d",
                 d.getYear(), d.getMonth(), d.getDay(), d.getHours(), d.getMinutes(), d.getSeconds());
         return out;
+    }
+
+    /**
+     * Gets the name of the calender when the controller is printed
+     * @return to name of the calender
+     */
+    @Override
+    public String toString() {
+        return getName();
+    }
+
+    /**
+     * Used to check if two calendars have the same name
+     * @param o the calender
+     * @return t/f
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CalendarController that = (CalendarController) o;
+        return model.getName().equals(that.getName());
     }
 }

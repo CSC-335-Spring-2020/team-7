@@ -5,34 +5,55 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.text.*;
 import javafx.stage.Stage;
 import model.CalendarModel;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Observable;
-import java.util.Observer;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
+ * This class constructs the view and handles what is displayed and passes user inputs
+ * into the controller.
  * @author Nicholas Lindenberg
- * Current revision VIEW_2 Month UI
- * Month UI statically implemented, need to be able to change between months.
+ * @author Mahmood Gladney
  */
 public class CalendarView extends javafx.application.Application implements Observer {
     private BorderPane bp;
-    private GridPane gp;
     protected VBox centerPane;
     private Scene scene;
-    protected CalendarController c;
+
+    protected Stage stage;
+
+    // had to make this global so it could be changed based on the
+    // arrows in the different views
+    DatePicker startDate = new DatePicker(java.time.LocalDate.now());
+
+    // this has been updated to a list of controllers, for when we implant
+    // multiple calenders
+    protected List<CalendarController> c = new ArrayList<>();
+
+    // the calender currently being viewed, altered by the sideBarUI
+    private CalendarController currentController;
+
     private CalendarModel m;
 
+    // the current date, exact for day view, week of for week view, and month of for month view
+    AtomicReference<Date> date = new AtomicReference<>(WeekView.zeroOutTime(new Date()));
 
+    // used by week view, unsure what for
+    Date[] datesOfWeek = new Date[7];
 
-    private enum Days {
+    // used for keeping track of the current view
+    int currView = 1; // 1= monthView, 2 = weekView, 3 = dayView
+
+    enum Days {
         Sunday,
         Monday,
         Tuesday,
@@ -52,6 +73,12 @@ public class CalendarView extends javafx.application.Application implements Obse
         bp.setCenter(centerPane);
     }
 
+    /**
+     * Start method, loads up the application
+     *
+     * @param primaryStage the primary stage
+     * @throws Exception if something in javaFX goes wrong
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         // TODO: Add and set icon for calendar window
@@ -59,84 +86,58 @@ public class CalendarView extends javafx.application.Application implements Obse
         // why is the width maxed?
         //primaryStage.setMaxWidth(1400);
         primaryStage.setMaximized(true);
-        m = new CalendarModel("TestCalendar");
+        stage = primaryStage;
+
+        //TODO set this to load a users calender rather than a default empty one
+        m = new CalendarModel("TestCalendar", Color.LIGHTBLUE);
         m.addObserver(this);
-        c = new CalendarController(m);
-        gp = new GridPane();
+        currentController = new CalendarController(m);
+        c.add(currentController);
         bp = new BorderPane();
 
         setCenter();
         sideBarUI();
         scene = new Scene(bp);
-        primaryStage.setTitle(String.format("%s's Calendar", c.getName()));
+        primaryStage.setTitle(String.format("%s's Calendar", currentController.getName()));
 
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
     /**
-     * Populates month view
+     * Populates month view based on the value of "currView" used to
+     * switch between the month, week, and day views
      */
     protected void setCenter() {
         //TODO: Integrate with model and controller so that dates are dynamic
-
         resetCenter();
-        centerPane.getChildren().add(gp);
-
-        gp.addRow(0);
-        FlowPane p;
-        Text t;
-        p = new FlowPane();
-        t = new Text("January\n");
-        t.setFont(Font.font("verdana", FontWeight.BOLD, FontPosture.ITALIC, 30));
-        p.getChildren().add(t);
-        p.setAlignment(Pos.CENTER);
-        t.setTextAlignment(TextAlignment.CENTER);
-        centerPane.getChildren().add(p);
-        int i = 0;
-        for (Days day : Days.values()) {
-            p = new FlowPane();
-            //p.setMinWidth(100);
-            p.setAlignment(Pos.CENTER);
-            t = new Text(day.toString());
-            t.setTextAlignment(TextAlignment.CENTER);
-            p.getChildren().add(t);
-            p.setPrefWidth(100);
-            gp.add(p, i, 0);
-            i++;
+        if (currView == 1){
+            MonthView.setCenter(this, c, date,centerPane);
         }
-        int dayCounter = 1;
-        for (i = 2; i < 7; i++) {
-            gp.addRow(i);
-            for (int j = 0; j < 7; j++) {
-                p = new FlowPane();
-               // p.setMinWidth(100);
-                p.setMinHeight(150);
-                p.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(1))));
-                if (dayCounter < 31) {
-                    t = new Text("  " + Integer.toString(dayCounter));
-                } else {
-                    t = new Text("  " + Integer.toString(dayCounter - 30));
-                    t.setFill(Color.GRAY);
-                }
-                t.setFont(new Font(20));
-                p.getChildren().add(t);
-                dayCounter++;
-                gp.add(p, j, i);
-            }
+        if (currView == 2){
+            WeekView.setCenter(this,c,date,datesOfWeek,centerPane);
+        }
+        if (currView == 3){
+            DayView.setCenter(this,c,date,centerPane);
         }
     }
 
     /**
      * This method will be called whenever something in the model
      * is updated default implementation just calls set center again
-     * @param o
-     * @param arg
+     * @param o the data. we don't use this
+     * @param arg some argument. we don't use this
      */
     @Override
     public void update(Observable o, Object arg) {
         System.out.println("update");
+
+        ZoneId defaultZoneId = ZoneId.systemDefault();
+        Instant instant = date.get().toInstant();
+
+        startDate.setValue(instant.atZone(defaultZoneId).toLocalDate());
         setCenter();
+        sideBarUI();
     }
 
     /**
@@ -149,26 +150,118 @@ public class CalendarView extends javafx.application.Application implements Obse
         Label setDayLabel = new Label("Enter date (MM/DD/YYYY)");
         HBox setDayHBox = new HBox(setDayLabel);
         setDayHBox.setAlignment(Pos.CENTER);
-        DatePicker startDate = new DatePicker(java.time.LocalDate.now());
 
-
-        RadioButton monthViewButton = new RadioButton("Month");
-        RadioButton weekViewButton = new RadioButton("Week");
-        RadioButton dayViewButton = new RadioButton("Day");
-        ToggleGroup viewButtonGroup = new ToggleGroup();
-        monthViewButton.setToggleGroup(viewButtonGroup);
-        monthViewButton.setSelected(true);
-        weekViewButton.setToggleGroup(viewButtonGroup);
-        dayViewButton.setToggleGroup(viewButtonGroup);
-        VBox viewHBox = new VBox(10,monthViewButton, weekViewButton,dayViewButton);
-        Button addEventButton = new Button("Add Event");
-        addEventButton.setOnAction(event -> {
-            AddEventModal modalInstance = new AddEventModal(true,null,c);
-            modalInstance.show();
+        startDate.setOnAction((e)->{
+            date.set(AddEventModal.localDateAndHourToDate(startDate.getValue(), 0));
+            update(null, null);
         });
 
+        /*
+         * Following code is for the radio button set for switching between
+         * the views
+         */
+        ToggleGroup viewButtonGroup = new ToggleGroup();
+
+        RadioButton monthViewButton = new RadioButton("Month");
+        monthViewButton.setToggleGroup(viewButtonGroup);
+        monthViewButton.setSelected(true);
+        monthViewButton.setOnAction(event -> {
+            currView = 1;
+            setCenter();
+        });
+
+        RadioButton weekViewButton = new RadioButton("Week");
+        weekViewButton.setToggleGroup(viewButtonGroup);
+        weekViewButton.setOnAction(event -> {
+            currView = 2;
+            setCenter();
+        });
+
+        RadioButton dayViewButton = new RadioButton("Day");
+        dayViewButton.setToggleGroup(viewButtonGroup);
+        dayViewButton.setOnAction(event -> {
+            currView = 3;
+            setCenter();
+        });
+
+        VBox viewHBox = new VBox(10,monthViewButton, weekViewButton,dayViewButton);
+
+        Button addEventButton = new Button("Add Event");
+        addEventButton.setOnAction(event -> {
+            ZoneId defaultZoneId = ZoneId.systemDefault();
+            Instant instant = date.get().toInstant();
+
+            // following logic checks if a calender exists or not, only launches the modal if one does
+            if(currentController == null && c.size() <= 0){
+                // the user has no calendars, alert them and close
+                Alert noCal = new Alert(Alert.AlertType.WARNING);
+                noCal.setHeaderText("Error");
+                noCal.setContentText("You have no calendars to add to.\n" +
+                        "Please create a new calendar.");
+                noCal.showAndWait();
+                return;
+            }else if(currentController == null && !c.isEmpty()){
+                // currentController is unset, but their exists a controller
+                currentController = c.get(0);
+            }
+
+            AddEventModal modalInstance = new AddEventModal(true,null,currentController, instant.atZone(defaultZoneId).toLocalDate());
+            modalInstance.show();
+        });
+        addEventButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
         VBox v = new VBox(20,setDayHBox,startDate,viewHBox,addEventButton);
-        bp.setLeft(v);
+
+        // using a border pane so the logic with adding / removing calenders
+        // sticks to the bottom
+        BorderPane sideBar = new BorderPane();
+        sideBar.setPadding(new Insets(15,15,15,15));
+        sideBar.setCenter(v);
+
+        /*
+         * The following code is for the adding and removing of
+         * calendars
+         */
+        Button addCalenders = new Button("Add a new Calender");
+        addCalenders.setOnMouseClicked((e)->{
+            AddCalendarModal m = new AddCalendarModal(this, true, c);
+            m.show();
+        });
+        addCalenders.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+        Label switchLabel = new Label("Choose your Calendar");
+        ChoiceBox<CalendarController> switchCalenders = new ChoiceBox<>();
+        switchCalenders.setValue(currentController);
+        switchCalenders.setOnAction((e)->{
+            currentController = switchCalenders.getValue();
+        });
+        for(CalendarController controller : c){
+            switchCalenders.getItems().add(controller);
+        }
+        switchCalenders.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+        Button removeCalenders = new Button("Remove");
+        removeCalenders.setOnMouseClicked((e)->{
+            Alert x = new Alert(Alert.AlertType.WARNING);
+            x.setTitle("Warning");
+            x.setHeaderText("Are you sure?");
+            x.showAndWait();
+
+            c.remove(currentController);
+            currentController = null;
+            update(null, null);
+        });
+        removeCalenders.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+        HBox switchAndRemove = new HBox(switchCalenders, removeCalenders);
+
+        VBox labelAndSwitch = new VBox(switchLabel, switchAndRemove);
+        labelAndSwitch.setSpacing(5);
+
+        VBox addSwitchCalenders = new VBox(addCalenders, labelAndSwitch);
+        addSwitchCalenders.setSpacing(15);
+        sideBar.setBottom(addSwitchCalenders);
+
+        bp.setLeft(sideBar);
     }
 }

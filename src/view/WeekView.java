@@ -16,33 +16,22 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This class allows for the construction of the calender app in a week view
- * setting, inherits from the CalenderView main class, and uses methods /
- * fields present in that class
+ * setting.
  *
  * @author Amin Sennour
  * @author Mahmood Gladney
  */
 
-public class WeekView extends  CalendarView {
+public class WeekView {
 
-    // the date being viewed. Atomic so lambda's can change it
-    AtomicReference<Date> date = new AtomicReference<>(zeroOutTime(new Date()));
-    Date[] datesOfWeek = new Date[7];
+
 
     /**
-     * The overriden setCenter method which replaces the center with the
+     * The setCenter method which replaces the center with the
      * day view
      */
-    @Override
-    protected void setCenter(){
-        // method needed from the parent which arrases any content in the center
-        resetCenter();
-
-        // temporary code, once the main class has a list of controllers
-        // rather than a single one that list will be referenced instead
-        List<CalendarController> calenders = new ArrayList<>();
-        calenders.add(c);
-
+    protected static void setCenter(CalendarView calendarView, List<CalendarController> calenders,
+                                    AtomicReference<Date> date, Date[] datesOfWeek, VBox centerPane){
         /*
          * Code for the forward / back buttons
          */
@@ -51,14 +40,14 @@ public class WeekView extends  CalendarView {
         left.setMaxWidth(Double.MAX_VALUE);
         left.setOnMouseClicked((e)->{
             date.set(addToDate(date.get(), -7));
-            populateDatesOfWeek();
-            update(null, null);
+            WeekView.populateDatesOfWeek(date,datesOfWeek);
+            calendarView.update(null, null);
         });
         Button right = new Button(">");
         right.setOnMouseClicked((e)->{
             date.set(addToDate(date.get(), 7));
-            populateDatesOfWeek();
-            update(null, null);
+            populateDatesOfWeek(date,datesOfWeek);
+            calendarView.update(null, null);
         });
         right.setMaxWidth(Double.MAX_VALUE);
         right.setMaxHeight(20);
@@ -91,18 +80,22 @@ public class WeekView extends  CalendarView {
         hold.prefHeightProperty().bind(scrollPane.heightProperty().add(-34));
         hold.prefWidthProperty().bind(scrollPane.widthProperty().add(-17));
 
-        populateDatesOfWeek();
+        populateDatesOfWeek(date,datesOfWeek);
 
-        Day.day(hold, calenders, datesOfWeek[0], true);
-        Day.day(hold, calenders, datesOfWeek[1], true);
-        Day.day(hold, calenders, datesOfWeek[2], true);
-        Day.day(hold, calenders, datesOfWeek[3], true);
-        Day.day(hold, calenders, datesOfWeek[4], true);
-        Day.day(hold, calenders, datesOfWeek[5], true);
-        Day.day(hold, calenders, datesOfWeek[6], true);
+        boolean isFirst = true;
+        for(Date d : datesOfWeek){
+            Day.day(hold, calenders, d, isFirst);
+            isFirst = false;
+        }
     }
 
-    private void populateDatesOfWeek() {
+    /**
+     * Method populates the dates of the week array based on a starting date
+     *
+     * @param date starting date
+     * @param datesOfWeek dates of the week array
+     */
+    protected static void populateDatesOfWeek(AtomicReference<Date> date,Date[] datesOfWeek) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date.get());
         int starterDay = cal.get(Calendar.DAY_OF_WEEK);
@@ -125,7 +118,7 @@ public class WeekView extends  CalendarView {
      * @param day the day who's time to zero
      * @return the date with the zeroed time
      */
-    private Date zeroOutTime(Date day){
+    protected static Date zeroOutTime(Date day){
         Date ret = null;
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String strDate = dateFormat.format(day);
@@ -146,7 +139,7 @@ public class WeekView extends  CalendarView {
      * @param amount the amount to shift by
      * @return the new date
      */
-    private Date addToDate(Date date, int amount){
+    protected static Date addToDate(Date date, int amount){
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.add(Calendar.DATE, amount);

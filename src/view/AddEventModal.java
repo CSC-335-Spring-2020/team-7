@@ -11,6 +11,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.CalendarEvent;
+import model.CalendarRecurringEvent;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -54,7 +55,7 @@ public class AddEventModal extends Stage {
      *              the modal, allowing for viewership, and this event will
      *              be removed from the model if the user chooses to edit
      */
-    public AddEventModal(boolean editable, CalendarEvent event, CalendarController c){
+    public AddEventModal(boolean editable, CalendarEvent event, CalendarController c, LocalDate date){
         // used to position the fields
         Pos position = Pos.BASELINE_LEFT;
         // used to determine the max width of the fields
@@ -106,7 +107,7 @@ public class AddEventModal extends Stage {
         /*
          * Code for the start Date label and date picker
          */
-        DatePicker startDate = new DatePicker(java.time.LocalDate.now());
+        DatePicker startDate = new DatePicker(date);
         startDate.setOnAction((e)->setWasChanged(editable));
         startDate.setMaxWidth(maxWidth);
         startDate.setDisable(!editable);
@@ -132,8 +133,11 @@ public class AddEventModal extends Stage {
         /*
          * Code for the start time selector
          */
+        int initialStartTime = event == null ? 12 : event.getStartTime().getHours();
         Spinner<Integer> startTime =
-                new Spinner<>( new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, 12));
+                new Spinner<>( new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, initialStartTime));
+        startTime.setOnMouseClicked((e)->changed=true);
+        startTime.setOnKeyTyped((e)->changed=true);
         startTime.setDisable(!editable);
         startTime.setStyle("-fx-opacity: 1;");
         startTime.getEditor().setStyle("-fx-opacity: 1;");
@@ -159,8 +163,12 @@ public class AddEventModal extends Stage {
         /*
          * Code for the end time selector
          */
+        int initialEndTime = event == null ? 12 : event.getEndTime().getHours();
         Spinner<Integer> endTime =
-                new Spinner<>( new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, 12));
+                new Spinner<>( new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 23, initialEndTime));
+        endTime.setOnMouseClicked((e)->changed=true);
+        endTime.setOnKeyTyped((e)->changed=true);
+
         endTime.setDisable(!editable);
         endTime.setStyle("-fx-opacity: 1;");
         endTime.getEditor().setStyle("-fx-opacity: 1;");
@@ -182,6 +190,25 @@ public class AddEventModal extends Stage {
         endTimeBox.setPadding(bottomPadded);
         HBox.setHgrow(endTimeAndLabel, Priority.ALWAYS);
 
+        /*
+         * Code for selecting re-occurrence
+         */
+        Label switchLabel = new Label("Recurrence");
+        switchLabel.setLabelFor(endTime);
+        switchLabel.setFont(new Font(15));
+        ChoiceBox<String> switchCalenders = new ChoiceBox<>();
+        switchCalenders.setDisable(!editable);
+        switchCalenders.setStyle("-fx-opacity: 1;");
+        switchCalenders.setOnAction((e)->setWasChanged(editable));
+        switchCalenders.getItems().add("NONE");
+        for(String interval : CalendarRecurringEvent.intervals.keySet()){
+            switchCalenders.getItems().add(interval);
+        }
+        switchCalenders.setValue(event == null ? "NONE" : event.getInterval());
+        switchCalenders.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
+        VBox labelAndSwitch = new VBox(switchLabel, switchCalenders);
+        labelAndSwitch.setSpacing(5);
 
         /*
          * Code for the Location label and text box
@@ -239,7 +266,7 @@ public class AddEventModal extends Stage {
         Button rightEventButton = new Button("Save Event");
         rightEventButton.setOnMouseClicked((e)->{
 
-            Date date = localDateAndHourToDate(startDate.getValue(), 0);
+            Date newDate = localDateAndHourToDate(startDate.getValue(), 0);
 
             Date newStart = localDateAndHourToDate(
                     startDate.getValue(), startTime.getValue());
@@ -250,11 +277,16 @@ public class AddEventModal extends Stage {
                 c.removeEvent(event);
             }
 
-            if(changed){
+            if(changed && switchCalenders.getValue().equals("NONE")){
                 System.out.println("Added");
                 c.addEvent(
-                        title.getText(), date, newStart, newEnd,
+                        title.getText(), newDate, newStart, newEnd,
                         location.getText(), notes.getText());
+            }else if(changed){
+                System.out.println("Added");
+                c.addRecurringEvent(
+                        title.getText(), newDate, newStart, newEnd,
+                        location.getText(), notes.getText(), CalendarRecurringEvent.intervals.get(switchCalenders.getValue()));
             }
 
             // print out diagnostic information
@@ -275,7 +307,7 @@ public class AddEventModal extends Stage {
          */
         Button leftEventButton = new Button("Edit Event");
         leftEventButton.setOnMouseClicked(e->{
-            AddEventModal m = new AddEventModal(true, event, c);
+            AddEventModal m = new AddEventModal(true, event, c, date);
             m.show();
             this.close();
         });
@@ -311,6 +343,7 @@ public class AddEventModal extends Stage {
         vb.getChildren().add(startDateBox);
         vb.getChildren().add(startTimeBox);
         vb.getChildren().add(endTimeBox);
+        vb.getChildren().add(labelAndSwitch);
         vb.getChildren().add(locationBox);
         vb.getChildren().add(notesBox);
 
@@ -328,7 +361,7 @@ public class AddEventModal extends Stage {
      * @param hour the hour on the local date to also be converted
      * @return the new java "date" representation of the above info
      */
-    private Date localDateAndHourToDate(LocalDate date, int hour){
+    public static Date localDateAndHourToDate(LocalDate date, int hour){
         SimpleDateFormat formatter=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
         String dateString = date.toString();
