@@ -18,26 +18,13 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * This modal can be used to add, edit, and display events, described in
- * detail in the constructor
+ * This modal can be used to add new "calendars" to the user's collection
+ * this is also where adding calendar files to the collection will take place
  *
  * @author Amin Sennour
  */
 
 public class AddCalendarModal extends Stage {
-
-    // this boolean is set false by default and set true only when something
-    // is changed. This way, if nothing is changed, the modal can just close
-    // rather than creating a new event every time
-    private boolean changed;
-
-    /**
-     * Exists so that lambda functions can change "changed"
-     * @param newVal the new value
-     */
-    private void setWasChanged(boolean newVal){
-        changed = newVal;
-    }
 
     /**
      * Constructor for the modal, used for adding, viewing and editing
@@ -78,7 +65,6 @@ public class AddCalendarModal extends Stage {
          * Code for the Title label and text box
          */
         TextField title = new TextField("Name");
-        title.setOnKeyTyped((e)->setWasChanged(editable));
         title.setMaxWidth(maxWidth);
         title.setEditable(editable);
 
@@ -126,7 +112,6 @@ public class AddCalendarModal extends Stage {
         /*
          * Code for loading a model from a file
          */
-
         Label gotFileLabel = new Label();
         gotFileLabel.setLabelFor(gotFileLabel);
         gotFileLabel.setFont(new Font(15));

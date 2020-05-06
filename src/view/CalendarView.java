@@ -74,6 +74,12 @@ public class CalendarView extends javafx.application.Application implements Obse
         bp.setCenter(centerPane);
     }
 
+    /**
+     * Start method, loads up the application
+     *
+     * @param primaryStage the primary stage
+     * @throws Exception if something in javaFX goes wrong
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
         // TODO: Add and set icon for calendar window
@@ -100,7 +106,8 @@ public class CalendarView extends javafx.application.Application implements Obse
     }
 
     /**
-     * Populates month view
+     * Populates month view based on the value of "currView" used to
+     * switch between the month, week, and day views
      */
     protected void setCenter() {
         //TODO: Integrate with model and controller so that dates are dynamic
@@ -119,8 +126,8 @@ public class CalendarView extends javafx.application.Application implements Obse
     /**
      * This method will be called whenever something in the model
      * is updated default implementation just calls set center again
-     * @param o
-     * @param arg
+     * @param o the data. we don't use this
+     * @param arg some argument. we don't use this
      */
     @Override
     public void update(Observable o, Object arg) {
@@ -212,6 +219,10 @@ public class CalendarView extends javafx.application.Application implements Obse
         sideBar.setPadding(new Insets(15,15,15,15));
         sideBar.setCenter(v);
 
+        /*
+         * The following code is for the adding and removing of
+         * calendars
+         */
         Button addCalenders = new Button("Add a new Calender");
         addCalenders.setOnMouseClicked((e)->{
             AddCalendarModal m = new AddCalendarModal(this, true, c);

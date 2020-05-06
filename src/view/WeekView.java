@@ -89,6 +89,12 @@ public class WeekView {
         }
     }
 
+    /**
+     * Method populates the dates of the week array based on a starting date
+     *
+     * @param date starting date
+     * @param datesOfWeek dates of the week array
+     */
     protected static void populateDatesOfWeek(AtomicReference<Date> date,Date[] datesOfWeek) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date.get());

@@ -14,6 +14,7 @@ import java.util.*;
  * Purpose : To take data from the model, organize it, and send it to the view,
  * as well as taking data from the view, and adding it to the model.
  *
+ * @author Amin Sennour
  */
 
 public class CalendarController {
@@ -39,10 +40,18 @@ public class CalendarController {
         model.setName(name);
     }
 
+    /**
+     * Getter for the calendar color
+     * @return the color
+     */
     public Color getColor(){
         return model.getColor();
     }
 
+    /**
+     * Setter for the calendar color
+     * @param c the new color
+     */
     public void setColor(Color c){
         model.setColor(c);
     }
@@ -180,6 +189,11 @@ public class CalendarController {
         return getName();
     }
 
+    /**
+     * Used to check if two calendars have the same name
+     * @param o the calender
+     * @return t/f
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

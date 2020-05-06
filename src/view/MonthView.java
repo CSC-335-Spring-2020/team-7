@@ -25,7 +25,7 @@ import javafx.scene.text.*;
 import model.CalendarEvent;
 
 /**
- * @author Nicholas Lindenberg
+ * @author Nicholas Lindenberg, Amin Sennour
  *
  * Creates a JavaFx window that populates a Calendar based on a Month View.
  */
