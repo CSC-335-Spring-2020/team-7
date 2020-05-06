@@ -69,6 +69,24 @@ public class CalendarModel extends Observable{
         return recurringEventList;
     }
 
+    /**
+     * Returns all of the events that this calendar holds
+     *
+     * This is used for saving the calendar to a file so that all of the events
+     * can be saved and don'thave to be requested date by date. All of the lists of events are
+     * put into a single list of events and returned
+     *
+     * @return the map of all events
+     */
+    public List<CalendarEvent> getEventList() {
+        List<CalendarEvent> events = new ArrayList<CalendarEvent>();
+
+        for (List<CalendarEvent> l : eventMap.values())
+            events.addAll(l);
+
+        return events;
+    }
+
     public void removeEvent(String uuid) throws IllegalArgumentException{
         for (List<CalendarEvent> i: eventMap.values()){
             for (CalendarEvent currEvent: i){

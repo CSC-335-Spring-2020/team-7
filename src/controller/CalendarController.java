@@ -4,10 +4,7 @@ import model.CalendarEvent;
 import model.CalendarModel;
 import model.CalendarRecurringEvent;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -25,8 +22,6 @@ public class CalendarController {
 
     CalendarModel model;
 
-    private static final String BEGIN_VCAL = "BEGIN:VCALENDAR";
-    private static final String END_VCAL = "END:VCALENDAR";
     private static final String BEGIN_VEVENT = "BEGIN:VEVENT";
     private static final String END_VEVENT = "END:VEVENT";
 
@@ -37,6 +32,12 @@ public class CalendarController {
     private static final String DESCRIPTION_ICS = "DESCRIPTION";
     private static final String UUID_ICS = "UID";
     private static final String RECUR_ICS = "RRULE";
+    private static final String ICS_NL = "\r\n";
+
+    private static final String BEGIN_VCAL = "BEGIN:VCALENDAR" + ICS_NL +
+                                             "VERSION:2.0" + ICS_NL +
+                                             "CALSCALE:GREGORIAN" + ICS_NL;
+    private static final String END_VCAL = "END:VCALENDAR";
 
     public CalendarController(CalendarModel m){
         model = m;
@@ -317,7 +318,33 @@ public class CalendarController {
         return new Date(year, month, day, hour, minute, sec);
     }
 
-    public static void exportCalendarToFile(String filename, CalendarModel calendar) {
+    public static void exportCalendarToFile(String filename, CalendarModel calendar) throws IOException {
+        FileWriter out = new FileWriter(new File(filename));
+        List<CalendarEvent> events = calendar.getEventList();
 
+        out.write(BEGIN_VCAL);
+
+        for (CalendarEvent event : events) {
+            writeEventToFile(event, out);
+        }
+
+        out.write(BEGIN_VCAL);
+    }
+
+    private static void writeEventToFile(CalendarEvent event, FileWriter out) {
+        String toOutput = BEGIN_VEVENT + ICS_NL +
+                          SUMMARY_ICS + ':' + event.getTitle() + ICS_NL; +
+                          DATE_START_ICS + ';' + event.getStartTime()
+    }
+
+    /**
+     *
+     * @param d
+     * @return
+     */
+    private static String convertDateToString(Date d) {
+        String out = String.format("$04d%02d%02dT%02d%02d%02d",
+                d.getYear(), d.getMonth(), d.getDay(), d.getHours(), d.getMinutes(), d.getSeconds());
+        return out;
     }
 }
