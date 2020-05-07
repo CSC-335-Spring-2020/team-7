@@ -69,6 +69,7 @@ public class CalendarModel extends Observable{
      * @param c Color object
      */
     public void setColor(Color c){ this.color = c; }
+
     public void addEvent(Date date, CalendarEvent event){
         if (eventMap.containsKey(date)) {
             eventMap.get(date).add(event);

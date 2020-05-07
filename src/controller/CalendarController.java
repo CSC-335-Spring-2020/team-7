@@ -80,44 +80,6 @@ public class CalendarController {
     }
 
     /**
-     * The range is [startDate, endDate) IE, it won't include the endDate
-     *
-     * @param startDate the date at which the range should should, inclusive
-     * @param endDate the date at which the range should end, exclusive
-     * @return a map of dates to lists of calenderEvents corresponding to the
-     * events happening between startDate and endDate.
-     */
-    public Map<Date, List<CalendarEvent>> getEvents(Date startDate, Date endDate){
-        Map<Date, List<CalendarEvent>> ret = new HashMap<>();
-        // make sure that the endDate isn't after the start date
-        if(endDate.before(startDate)){
-            throw new IllegalArgumentException("StartDate=" + startDate + " is after EndDate=" + endDate);
-        }
-
-        Date current = (Date) startDate.clone();
-        while(current.before(endDate)){
-            System.out.println(current);
-
-            // cloning the list of that the view editing what's returned from this
-            // method doesn't change the model
-            List<CalendarEvent> toAdd = new ArrayList<>(model.getEvents(current));
-
-            /*
-             * Put some logic here to determine if there are any reoccurring
-             * events happening on this day.
-             */
-
-            ret.put(current, toAdd);
-
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(current);
-            calendar.add(Calendar.DATE, 1);
-            current = calendar.getTime();
-        }
-        return ret;
-    }
-
-    /**
      * Gets the events happening on a single day
      *
      * @param day the day to fetch
@@ -206,15 +168,6 @@ public class CalendarController {
      */
     public void removeEvent(CalendarEvent toRemove){
         model.removeEvent(toRemove.getDate(), toRemove);
-    }
-
-    /**
-     * Used to remove an event when the user has access to the CalenderEvent UUID
-     *
-     * @param uuid the id of the event to remove
-     */
-    public void removeEvent(String uuid){
-        model.removeEvent(uuid);
     }
 
     /**
