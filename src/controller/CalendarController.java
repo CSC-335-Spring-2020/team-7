@@ -46,6 +46,10 @@ public class CalendarController {
         model = m;
     }
 
+    public List<CalendarRecurringEvent> getReVents(){
+        return model.getRecurringEventList();
+    }
+
     /**
      * Getter for the calender name
      * @return the name
@@ -360,7 +364,7 @@ public class CalendarController {
         int year = Integer.parseInt(args.substring(0, 4)) - 1900;
         int month = Integer.parseInt(args.substring(4, 6));
         int day = Integer.parseInt(args.substring(6, 8));
-        return new Date(year, month, day);
+        return new Date(year, month, day, 12, 0, 0);
     }
 
     /**
@@ -422,7 +426,7 @@ public class CalendarController {
     private static void writeRecEventToFile(CalendarRecurringEvent event, FileWriter out) throws IOException {
         String rec = event.getInterval();
 
-        System.out.println("Writing date to file: " + event.getStartTime());
+        //System.out.println("Writing date to file: " + event.getStartTime());
         String toOutput = BEGIN_VEVENT + ICS_NL +
                 SUMMARY_ICS + ':' + event.getTitle() + ICS_NL +
                 DATE_START_ICS + ';' + convertDateToString(event.getStartTime()) + ICS_NL +

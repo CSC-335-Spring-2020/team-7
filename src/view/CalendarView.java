@@ -104,6 +104,7 @@ public class CalendarView extends javafx.application.Application implements Obse
         }
 
         currentController = c.get(0);
+        System.out.println(currentController.getReVents());
 
         bp = new BorderPane();
 

@@ -90,9 +90,6 @@ public class CalendarModel extends Observable{
     public List<CalendarEvent> getEvents(Date date){
         List<CalendarEvent> ret = new ArrayList<>();
         for(CalendarRecurringEvent e : recurringEventList){
-
-            System.out.println(e.getTitle() + " | " + e.getDate() + " | " + date + " " + DayView.addToDate(date, 1) + " | " + e.getInterval());
-
             if(!e.getOccurances(date, DayView.addToDate(date, 1)).isEmpty()){
                 ret.add(e);
             }
@@ -101,6 +98,8 @@ public class CalendarModel extends Observable{
         if(eventMap.containsKey(date)){
             ret.addAll(eventMap.get(date));
         }
+
+        System.out.println(ret);
 
         if(!ret.isEmpty()){
             return ret;
