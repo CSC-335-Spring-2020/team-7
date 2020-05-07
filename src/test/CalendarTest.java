@@ -10,8 +10,10 @@ import org.junit.jupiter.api.Test;
 import view.CalendarView;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
+import static controller.CalendarController.importCalendarFromFile;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CalendarTest {
@@ -126,5 +128,45 @@ public class CalendarTest {
         assertEquals(numberOfCalendars, CalendarAutoSave.getSavedCalendars(null).size());
         CalendarAutoSave.saveCalendars(CalendarAutoSave.getSavedCalendars(null));
         assertEquals(numberOfCalendars, CalendarAutoSave.getSavedCalendars(null).size());
+    }
+
+    @Test
+    public void testICSSaveandLoad() {
+        CalendarEvent event = new CalendarEvent("Non-Recurring Event",
+                new Date(2020 - 1900, 4, 25),
+                new Date(2020 - 1900, 4, 25, 8, 30, 0),
+                new Date(2020 - 1900, 4, 25, 9, 30, 0),
+                "JSGFS6TF8S76FTA");
+
+        System.out.println(event.getStartTime());
+
+        CalendarRecurringEvent recEvent = new CalendarRecurringEvent("Recurring Event",
+                new Date(2020 - 1900, 4, 25),
+                new Date(2020 - 1900, 4, 25, 8, 30, 0),
+                new Date(2020 - 1900, 4, 25, 9, 30, 0),
+                "KJADYFT87SDTFUG",
+                CalendarRecurringEvent.WEEKLY);
+
+        CalendarModel calendar = new CalendarModel("SampleCalendar", Color.RED);
+        calendar.addEvent(event.getDate(), event);
+        calendar.addRecurringEvent(recEvent);
+
+        try {
+
+            CalendarController.exportCalendarToFile(calendar);
+            CalendarModel readCal = CalendarController.importCalendarFromFile("SampleCalendar.ics");
+            CalendarEvent newEvent = readCal.getEventList().get(0);
+            CalendarRecurringEvent newRecEvent = readCal.getRecurringEventList().get(0);
+
+            assertEquals(newEvent.getTitle(), event.getTitle());
+            assertEquals(newEvent.getDate(), event.getDate());
+            assertEquals(newEvent.getStartTime(), event.getStartTime());
+            assertEquals(newEvent.getEndTime(), event.getEndTime());
+            assertEquals(newEvent.getLocation(), event.getLocation());
+            assertEquals(newEvent.getNotes(), event.getNotes());
+            assertEquals(newEvent.getEventId(), event.getEventId());
+        } catch (IOException e) {
+            assert(false);
+        }
     }
 }
