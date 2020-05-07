@@ -5,6 +5,7 @@ import java.util.*;
 /**
  * This subclass of CalendarEvent is used for events that recur at a
  * regular interval
+ * @author Joseph Acevedo
  */
 public class CalendarRecurringEvent extends CalendarEvent {
 

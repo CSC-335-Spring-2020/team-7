@@ -16,6 +16,7 @@ import java.util.*;
  * as well as taking data from the view, and adding it to the model.
  *
  * @author Amin Sennour
+ * @author Joseph Acevedo
  */
 
 public class CalendarController {
