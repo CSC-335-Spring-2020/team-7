@@ -99,8 +99,6 @@ public class CalendarModel extends Observable{
             ret.addAll(eventMap.get(date));
         }
 
-        System.out.println(ret);
-
         if(!ret.isEmpty()){
             return ret;
         }else{

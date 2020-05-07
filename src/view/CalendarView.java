@@ -104,7 +104,6 @@ public class CalendarView extends javafx.application.Application implements Obse
         }
 
         currentController = c.get(0);
-        System.out.println(currentController.getReVents());
 
         bp = new BorderPane();
 
@@ -143,8 +142,6 @@ public class CalendarView extends javafx.application.Application implements Obse
      */
     @Override
     public void update(Observable o, Object arg) {
-        System.out.println("update");
-
         ZoneId defaultZoneId = ZoneId.systemDefault();
         Instant instant = date.get().toInstant();
 

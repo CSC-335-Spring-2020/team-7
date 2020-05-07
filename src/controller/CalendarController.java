@@ -46,10 +46,6 @@ public class CalendarController {
         model = m;
     }
 
-    public List<CalendarRecurringEvent> getReVents(){
-        return model.getRecurringEventList();
-    }
-
     /**
      * Getter for the calender name
      * @return the name
@@ -339,6 +335,7 @@ public class CalendarController {
         }
 
         if (frequency != -1) {
+            date.setHours(12);
             CalendarEvent event = new CalendarRecurringEvent(title, date, start, end, id, frequency);
             event.setLocation(location);
             event.setNotes(notes);
@@ -364,7 +361,7 @@ public class CalendarController {
         int year = Integer.parseInt(args.substring(0, 4)) - 1900;
         int month = Integer.parseInt(args.substring(4, 6));
         int day = Integer.parseInt(args.substring(6, 8));
-        return new Date(year, month, day, 12, 0, 0);
+        return new Date(year, month, day);
     }
 
     /**
