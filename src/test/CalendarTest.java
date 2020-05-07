@@ -154,7 +154,7 @@ public class CalendarTest {
         try {
 
             CalendarController.exportCalendarToFile(calendar);
-            CalendarModel readCal = CalendarController.importCalendarFromFile("SampleCalendar.ics");
+            CalendarModel readCal = CalendarController.importCalendarFromFile("saves/SampleCalendar.ics");
             CalendarEvent newEvent = readCal.getEventList().get(0);
             CalendarRecurringEvent newRecEvent = readCal.getRecurringEventList().get(0);
 
