@@ -20,7 +20,7 @@ import java.util.*;
 
 public class CalendarController {
 
-    CalendarModel model;
+    public CalendarModel model;
 
     private static final String BEGIN_VEVENT = "BEGIN:VEVENT";
     private static final String END_VEVENT = "END:VEVENT";
@@ -226,6 +226,10 @@ public class CalendarController {
      */
     public static CalendarModel importCalendarFromFile(String filename) throws IOException {
         String calName = filename.substring(0, filename.indexOf('.'));
+
+        // get rid of the path to the autosave location
+        calName = calName.replace(CalendarAutoSave.PATH_TO_SAVES + "/", "");
+
         TreeMap<Date, List<CalendarEvent>> eventMap = new TreeMap<Date, List<CalendarEvent>>();
         List<CalendarRecurringEvent> recEvents = new ArrayList<CalendarRecurringEvent>();
         Color calColor = null;
@@ -258,6 +262,7 @@ public class CalendarController {
         CalendarModel calOut = new CalendarModel(calName, eventMap, recEvents);
         calOut.setColor(calColor);
         in.close();
+
         return calOut;
     }
 
@@ -377,8 +382,12 @@ public class CalendarController {
         return new Date(year, month, day, hour, minute, sec);
     }
 
-    public static void exportCalendarToFile(CalendarModel calendar) throws IOException {
-        FileWriter out = new FileWriter(new File(calendar.getName() + ".ics"));
+    public static void exportCalendarToFile(CalendarModel calendarModel) throws IOException {
+        exportCalendarToFile(calendarModel, CalendarAutoSave.PATH_TO_SAVES + "/" + calendarModel.getName() + ".ics");
+    }
+
+    public static void exportCalendarToFile(CalendarModel calendar, String pathname) throws IOException {
+        FileWriter out = new FileWriter(new File(pathname));
         List<CalendarEvent> events = calendar.getEventList();
         List<CalendarRecurringEvent> recEvents = calendar.getRecurringEventList();
 

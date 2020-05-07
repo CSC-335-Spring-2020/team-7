@@ -1,5 +1,6 @@
 package view;
 
+import controller.CalendarAutoSave;
 import controller.CalendarController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -9,9 +10,12 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import model.CalendarModel;
 
+import java.io.File;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.*;
@@ -37,7 +41,7 @@ public class CalendarView extends javafx.application.Application implements Obse
 
     // this has been updated to a list of controllers, for when we implant
     // multiple calenders
-    protected List<CalendarController> c = new ArrayList<>();
+    protected List<CalendarController> c;
 
     // the calender currently being viewed, altered by the sideBarUI
     private CalendarController currentController;
@@ -89,10 +93,18 @@ public class CalendarView extends javafx.application.Application implements Obse
         stage = primaryStage;
 
         //TODO set this to load a users calender rather than a default empty one
-        m = new CalendarModel("TestCalendar", Color.LIGHTBLUE);
-        m.addObserver(this);
-        currentController = new CalendarController(m);
-        c.add(currentController);
+
+        c = CalendarAutoSave.getSavedCalendars(this);
+        CalendarAutoSave.launchAutoSave(c);
+
+        if(c.isEmpty()){
+            CalendarModel m = new CalendarModel("Default", Color.OLDLACE);
+            m.addObserver(this);
+            c.add(new CalendarController(m));
+        }
+
+        currentController = c.get(0);
+
         bp = new BorderPane();
 
         setCenter();
@@ -229,6 +241,25 @@ public class CalendarView extends javafx.application.Application implements Obse
         });
         addCalenders.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
 
+        Button saveCalendars = new Button("Save current Calendar");
+        saveCalendars.setOnMouseClicked((e)->{
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save Calendar");
+            fileChooser.getExtensionFilters().addAll(
+                    new FileChooser.ExtensionFilter("ICS", "*.ics")
+            );
+            File file = fileChooser.showSaveDialog(stage);
+            if (file != null) {
+                String filePath = file.getAbsolutePath();
+                try {
+                    CalendarController.exportCalendarToFile(currentController.model, filePath);
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+            }
+        });
+        saveCalendars.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+
         Label switchLabel = new Label("Choose your Calendar");
         ChoiceBox<CalendarController> switchCalenders = new ChoiceBox<>();
         switchCalenders.setValue(currentController);
@@ -258,7 +289,7 @@ public class CalendarView extends javafx.application.Application implements Obse
         VBox labelAndSwitch = new VBox(switchLabel, switchAndRemove);
         labelAndSwitch.setSpacing(5);
 
-        VBox addSwitchCalenders = new VBox(addCalenders, labelAndSwitch);
+        VBox addSwitchCalenders = new VBox(addCalenders, saveCalendars, labelAndSwitch);
         addSwitchCalenders.setSpacing(15);
         sideBar.setBottom(addSwitchCalenders);
 

@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 import model.CalendarModel;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -118,7 +119,7 @@ public class AddCalendarModal extends Stage {
         gotFileLabel.setAlignment(Pos.CENTER);
 
         // holder for the file the filer picker will get
-        AtomicReference<File> gotFile = new AtomicReference<>();
+        AtomicReference<String> gotFile = new AtomicReference<>();
 
         Button file = new Button("File");
         file.setMaxWidth(maxWidth);
@@ -138,16 +139,20 @@ public class AddCalendarModal extends Stage {
         fileBox.setPadding(bottomPadded);
         HBox.setHgrow(fileAndLabel, Priority.ALWAYS);
 
+        AtomicReference<String> foundFilePath = new AtomicReference<>("");
+
         file.setOnMouseClicked((e)->{
             FileChooser f = new FileChooser();
             f.getExtensionFilters().addAll(
                     new FileChooser.ExtensionFilter("ICS", "*.ics")
             );
             f.setTitle("Open Resource File");
-            gotFile.set(f.showOpenDialog(view.stage));
-            if(gotFile.get() != null){
-                gotFileLabel.setText(gotFile.get().getName() + "  ✔");
+            File h = f.showOpenDialog(view.stage);
+            if(h != null){
+                gotFileLabel.setText(h.getName() + "  ✔");
                 fileAndLabel.getChildren().add(gotFileLabel);
+                foundFilePath.set(h.getAbsolutePath());
+                System.out.println(foundFilePath.get());
             }
         });
 
@@ -159,8 +164,15 @@ public class AddCalendarModal extends Stage {
         Button rightEventButton = new Button("Save Calendar");
         rightEventButton.setOnMouseClicked((e)->{
             CalendarModel m = null;
-            if(gotFile.get() != null){
-                // code for loading a .ics file into a model
+            if(!foundFilePath.get().equals("")){
+                try {
+                    m = CalendarController.importCalendarFromFile(foundFilePath.get());
+                    m.setName(title.getText());
+                    m.setColor(hold.getValue());
+                    System.out.println("LOADED : " + m.getName());
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
             }else{
                 m = new CalendarModel(title.getText(), hold.getValue());
             }
