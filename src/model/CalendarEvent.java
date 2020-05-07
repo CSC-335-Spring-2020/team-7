@@ -4,7 +4,7 @@ import java.util.Date;
 /**
  * This class represents an event that will be stored and displayed by
  * the calendar.
- * @author Amin Sennour
+ * @author Amin Sennour, Joseph Acevedo
  */
 public class CalendarEvent {
 

@@ -32,6 +32,7 @@ public class CalendarController {
     private static final String DESCRIPTION_ICS = "DESCRIPTION";
     private static final String UUID_ICS = "UID";
     private static final String RECUR_ICS = "RRULE";
+    private static final String COLOR_ICS = "COLOR";
     private static final String ICS_NL = "\r\n";
 
     private static final String BEGIN_VCAL = "BEGIN:VCALENDAR" + ICS_NL +
@@ -227,6 +228,7 @@ public class CalendarController {
         String calName = filename.substring(0, filename.indexOf('.'));
         TreeMap<Date, List<CalendarEvent>> eventMap = new TreeMap<Date, List<CalendarEvent>>();
         List<CalendarRecurringEvent> recEvents = new ArrayList<CalendarRecurringEvent>();
+        Color calColor = null;
 
         // Build the calendar using a pre-made ics parser
         Scanner in = new Scanner(new File(filename));
@@ -246,9 +248,15 @@ public class CalendarController {
                         eventMap.put(event.getDate(), events);
                     }
                 }
+            } else if (currCmd.startsWith(COLOR_ICS)) {
+                int red = Integer.valueOf(currCmd.substring(8, 10), 16);
+                int green = Integer.valueOf(currCmd.substring(10, 12), 16);
+                int blue = Integer.valueOf(currCmd.substring(12, 14), 16);
+                calColor = new Color(red / 255.0, green / 255.0, blue / 255.0, 1);
             }
         }
         CalendarModel calOut = new CalendarModel(calName, eventMap, recEvents);
+        calOut.setColor(calColor);
         in.close();
         return calOut;
     }
@@ -271,6 +279,7 @@ public class CalendarController {
         Date date = null;
         Date start = null;
         Date end = null;
+        Color calColor = null;
         int frequency = -1;
 
         while (in.hasNextLine()) {
@@ -343,7 +352,7 @@ public class CalendarController {
      * @return A date form the given string
      */
     private static Date parseDate(String args) {
-        int year = Integer.parseInt(args.substring(0, 4));
+        int year = Integer.parseInt(args.substring(0, 4)) - 1900;
         int month = Integer.parseInt(args.substring(4, 6));
         int day = Integer.parseInt(args.substring(6, 8));
         return new Date(year, month, day);
@@ -359,7 +368,7 @@ public class CalendarController {
      * @return A date form the given string
      */
     private static Date parseDateTime(String args) {
-        int year = Integer.parseInt(args.substring(0, 4));
+        int year = Integer.parseInt(args.substring(0, 4)) - 1900;
         int month = Integer.parseInt(args.substring(4, 6));
         int day = Integer.parseInt(args.substring(6, 8));
         int hour = Integer.parseInt(args.substring(9, 11));
@@ -374,6 +383,7 @@ public class CalendarController {
         List<CalendarRecurringEvent> recEvents = calendar.getRecurringEventList();
 
         out.write(BEGIN_VCAL);
+        out.write(String.format("%s:%s%s", COLOR_ICS, calendar.getColor(), ICS_NL));
 
         for (CalendarEvent event : events) {
             writeEventToFile(event, out);
@@ -403,6 +413,7 @@ public class CalendarController {
     private static void writeRecEventToFile(CalendarRecurringEvent event, FileWriter out) throws IOException {
         String rec = event.getInterval();
 
+        System.out.println("Writing date to file: " + event.getStartTime());
         String toOutput = BEGIN_VEVENT + ICS_NL +
                 SUMMARY_ICS + ':' + event.getTitle() + ICS_NL +
                 DATE_START_ICS + ';' + convertDateToString(event.getStartTime()) + ICS_NL +
@@ -427,7 +438,7 @@ public class CalendarController {
      */
     private static String convertDateToString(Date d) {
         String out = String.format("%04d%02d%02dT%02d%02d%02d",
-                d.getYear(), d.getMonth(), d.getDay(), d.getHours(), d.getMinutes(), d.getSeconds());
+                d.getYear() + 1900, d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds());
         return out;
     }
 
@@ -451,5 +462,54 @@ public class CalendarController {
         if (o == null || getClass() != o.getClass()) return false;
         CalendarController that = (CalendarController) o;
         return model.getName().equals(that.getName());
+    }
+
+    public static void main(String[] args) {
+        CalendarEvent event = new CalendarEvent("Non-Recurring Event",
+                new Date(2020 - 1900, 4, 25),
+                new Date(2020 - 1900, 4, 25, 8, 30, 0),
+                new Date(2020 - 1900, 4, 25, 9, 30, 0),
+                "JSGFS6TF8S76FTA");
+
+        System.out.println(event.getStartTime());
+
+        CalendarRecurringEvent recEvent = new CalendarRecurringEvent("Recurring Event",
+                new Date(2020 - 1900, 4, 25),
+                new Date(2020 - 1900, 4, 25, 8, 30, 0),
+                new Date(2020 - 1900, 4, 25, 9, 30, 0),
+                "KJADYFT87SDTFUG",
+                CalendarRecurringEvent.WEEKLY);
+
+        CalendarModel calendar = new CalendarModel("SampleCalendar", Color.RED);
+        calendar.addEvent(event.getDate(), event);
+        calendar.addRecurringEvent(recEvent);
+        try {
+            exportCalendarToFile(calendar);
+            CalendarModel readCal = importCalendarFromFile("SampleCalendar.ics");
+            System.out.println("Calendar:" + readCal.getName());
+            System.out.println("Color: " + readCal.getColor());
+            CalendarEvent newEvent = readCal.getEventList().get(0);
+            CalendarRecurringEvent newRecEvent = readCal.getRecurringEventList().get(0);
+            System.out.printf("Event:" +
+                                "\n\tTitle: " + newEvent.getTitle() +
+                                "\n\tDate: " + newEvent.getDate() +
+                                "\n\tStart: " + newEvent.getStartTime() +
+                                "\n\tEnd: " + newEvent.getEndTime() +
+                                "\n\tLocation: " + newEvent.getLocation() +
+                                "\n\tNotes: " + newEvent.getNotes() +
+                                "\n\tID: " + newEvent.getEventId() + "\n\n");
+
+            System.out.printf("Recurring Event:" +
+                                "\n\tTitle: " + newRecEvent.getTitle() +
+                                "\n\tDate: " + newRecEvent.getDate() +
+                                "\n\tStart: " + newRecEvent.getStartTime() +
+                                "\n\tEnd: " + newRecEvent.getEndTime() +
+                                "\n\tLocation: " + newRecEvent.getLocation() +
+                                "\n\tNotes: " + newRecEvent.getNotes() +
+                                "\n\tID: " + newRecEvent.getEventId() +
+                                "\n\tFreq: " + newRecEvent.getInterval() + "\n\n");
+        } catch (IOException e) {
+
+        }
     }
 }
