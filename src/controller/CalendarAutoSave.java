@@ -18,8 +18,10 @@ import java.util.Objects;
 public class CalendarAutoSave {
     public static final String PATH_TO_SAVES = "saves";
 
+    private static Thread autoSave;
+
     public static void launchAutoSave(List<CalendarController> c){
-        Thread autoSave = new Thread(()->{
+        autoSave = new Thread(()->{
             while (true){
                 saveCalendars(c);
                 try {
@@ -30,6 +32,10 @@ public class CalendarAutoSave {
             }
         });
         autoSave.start();
+    }
+
+    public static void closeAutoSave(){
+        autoSave.stop();
     }
 
     public static List<CalendarController> getSavedCalendars(CalendarView observer){

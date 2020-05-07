@@ -111,7 +111,9 @@ public class CalendarView extends javafx.application.Application implements Obse
         sideBarUI();
         scene = new Scene(bp);
         primaryStage.setTitle(String.format("%s's Calendar", currentController.getName()));
-
+        primaryStage.setOnCloseRequest((e)->{
+            CalendarAutoSave.closeAutoSave();
+        });
         primaryStage.setScene(scene);
         primaryStage.show();
     }
