@@ -21,7 +21,6 @@ public class CalendarAutoSave {
     public static void launchAutoSave(List<CalendarController> c){
         Thread autoSave = new Thread(()->{
             while (true){
-                System.out.println(c);
                 saveCalendars(c);
                 try {
                     Thread.sleep(1000);
