@@ -225,6 +225,10 @@ public class CalendarController {
      */
     public static CalendarModel importCalendarFromFile(String filename) throws IOException {
         String calName = filename.substring(0, filename.indexOf('.'));
+
+        // get rid of the path to the autosave location
+        calName = calName.replace(CalendarAutoSave.PATH_TO_SAVES + "/", "");
+
         TreeMap<Date, List<CalendarEvent>> eventMap = new TreeMap<Date, List<CalendarEvent>>();
         List<CalendarRecurringEvent> recEvents = new ArrayList<CalendarRecurringEvent>();
 
@@ -250,6 +254,7 @@ public class CalendarController {
         }
         CalendarModel calOut = new CalendarModel(calName, eventMap, recEvents);
         in.close();
+
         return calOut;
     }
 
@@ -369,7 +374,7 @@ public class CalendarController {
     }
 
     public static void exportCalendarToFile(CalendarModel calendarModel) throws IOException {
-        exportCalendarToFile(calendarModel, calendarModel.getName() + ".ics");
+        exportCalendarToFile(calendarModel, CalendarAutoSave.PATH_TO_SAVES + "/" + calendarModel.getName() + ".ics");
     }
 
     public static void exportCalendarToFile(CalendarModel calendar, String pathname) throws IOException {

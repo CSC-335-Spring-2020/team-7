@@ -1,5 +1,6 @@
 package view;
 
+import controller.CalendarAutoSave;
 import controller.CalendarController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -40,7 +41,7 @@ public class CalendarView extends javafx.application.Application implements Obse
 
     // this has been updated to a list of controllers, for when we implant
     // multiple calenders
-    protected List<CalendarController> c = new ArrayList<>();
+    protected List<CalendarController> c;
 
     // the calender currently being viewed, altered by the sideBarUI
     private CalendarController currentController;
@@ -92,10 +93,18 @@ public class CalendarView extends javafx.application.Application implements Obse
         stage = primaryStage;
 
         //TODO set this to load a users calender rather than a default empty one
-        m = new CalendarModel("TestCalendar", Color.LIGHTBLUE);
-        m.addObserver(this);
-        currentController = new CalendarController(m);
-        c.add(currentController);
+
+        c = CalendarAutoSave.getSavedCalendars(this);
+        CalendarAutoSave.launchAutoSave(c);
+
+        if(c.isEmpty()){
+            CalendarModel m = new CalendarModel("Default", Color.OLDLACE);
+            m.addObserver(this);
+            c.add(new CalendarController(m));
+        }
+
+        currentController = c.get(0);
+
         bp = new BorderPane();
 
         setCenter();
