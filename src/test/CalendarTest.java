@@ -49,7 +49,7 @@ public class CalendarTest {
         assertEquals(event.getNotes(), "Pick up the flowers first");
         assertEquals(event.getStartTime(), startDate);
         assertEquals(event.getLocation(),"3321 W 45th St");
-        assertEquals(event.getInterval(),4);
+        assertEquals(event.getInterval(), "WEEKLY");
         assertEquals(event.getOccurances(startDate,endDate).size(),3);
         assertEquals(event.getOccurances(endDate,startDate).size(),0);
     }
