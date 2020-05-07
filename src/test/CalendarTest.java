@@ -1,12 +1,15 @@
 package test;
 
+import controller.CalendarAutoSave;
 import controller.CalendarController;
 import javafx.scene.paint.Color;
 import model.CalendarEvent;
 import model.CalendarModel;
 import model.CalendarRecurringEvent;
 import org.junit.jupiter.api.Test;
+import view.CalendarView;
 
+import java.io.File;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -108,5 +111,20 @@ public class CalendarTest {
         c.toString();
         boolean s = c.equals(d);
         assertEquals(s, true);
+    }
+
+    @Test
+    public void testCalendarAutoSave(){
+        // this bit just runs the threading code
+        CalendarAutoSave.launchAutoSave(CalendarAutoSave.getSavedCalendars(null));
+        CalendarAutoSave.closeAutoSave();
+
+        int numberOfCalendars = 0;
+        for (final File fileEntry : Objects.requireNonNull(new File(CalendarAutoSave.PATH_TO_SAVES).listFiles())) {
+            numberOfCalendars += 1;
+        }
+        assertEquals(numberOfCalendars, CalendarAutoSave.getSavedCalendars(null).size());
+        CalendarAutoSave.saveCalendars(CalendarAutoSave.getSavedCalendars(null));
+        assertEquals(numberOfCalendars, CalendarAutoSave.getSavedCalendars(null).size());
     }
 }

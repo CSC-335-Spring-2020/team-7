@@ -12,6 +12,10 @@ import java.util.Objects;
 /**
  * Static class to wrap the logic of autosaving and loading all the user's
  * saved calendars
+ *
+ * This class can't get 90 percent coverage due to it interfacing with files
+ * and threads.
+ *
  * @author Amin Sennour
  * @author Joseph Acevedo
  */
@@ -54,7 +58,9 @@ public class CalendarAutoSave {
         for (final File fileEntry : Objects.requireNonNull(new File(PATH_TO_SAVES).listFiles())) {
             try {
                 CalendarModel m = CalendarController.importCalendarFromFile("saves/" + fileEntry.getName());
-                m.addObserver(observer);
+                if(observer!= null){
+                    m.addObserver(observer);
+                }
                 c.add(new CalendarController(m));
             } catch (IOException e) {
                 e.printStackTrace();
